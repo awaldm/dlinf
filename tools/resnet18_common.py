@@ -38,4 +38,3 @@ def load_resnet18(weights_name: str):
 
     model = resnet18(weights=weights)
     return torch, torchvision, model.eval(), weights_label
-

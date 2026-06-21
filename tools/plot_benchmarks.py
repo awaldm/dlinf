@@ -87,19 +87,27 @@ def write_latency_svg(records: list[dict[str, Any]], path: Path) -> None:
         "Median latency in milliseconds. Bar length uses a log scale."
         "</text>"
     )
-    parts.append(f'<line class="axis" x1="{left}" y1="{top - 12}" x2="{left + bar_width}" y2="{top - 12}"/>')
+    parts.append(
+        f'<line class="axis" x1="{left}" y1="{top - 12}" x2="{left + bar_width}" y2="{top - 12}"/>'
+    )
 
     for index, record in enumerate(records):
         y = top + index * row_height
         value = float(record["median_ms"])
-        fraction = (math.log10(value) - math.log10(min_value)) / log_span if log_span else 1.0
+        fraction = (
+            (math.log10(value) - math.log10(min_value)) / log_span if log_span else 1.0
+        )
         length = max(3.0, fraction * bar_width)
         impl = str(record["impl"])
         css_class = "bar-eigen" if "eigen" in impl else "bar-direct"
         label = html.escape(label_for(record))
         parts.append(f'<text class="label" x="28" y="{y + 18}">{label}</text>')
-        parts.append(f'<rect class="{css_class}" x="{left}" y="{y}" width="{length:.1f}" height="22" rx="3"/>')
-        parts.append(f'<text class="value" x="{left + length + 10:.1f}" y="{y + 16}">{value:.3f} ms</text>')
+        parts.append(
+            f'<rect class="{css_class}" x="{left}" y="{y}" width="{length:.1f}" height="22" rx="3"/>'
+        )
+        parts.append(
+            f'<text class="value" x="{left + length + 10:.1f}" y="{y + 16}">{value:.3f} ms</text>'
+        )
 
     parts.append("</svg>")
     path.write_text("\n".join(parts), encoding="utf-8")
@@ -156,9 +164,15 @@ def write_speedup_svg(records: list[dict[str, Any]], path: Path) -> None:
     for index, ((name, _direct, _eigen), speedup) in enumerate(zip(pairs, speedups)):
         y = top + index * row_height
         length = (speedup / max_speedup) * bar_width
-        parts.append(f'<text class="label" x="28" y="{y + 18}">{html.escape(name)}</text>')
-        parts.append(f'<rect class="bar-speed" x="{left}" y="{y}" width="{length:.1f}" height="24" rx="3"/>')
-        parts.append(f'<text class="value" x="{left + length + 10:.1f}" y="{y + 17}">{speedup:.1f}x</text>')
+        parts.append(
+            f'<text class="label" x="28" y="{y + 18}">{html.escape(name)}</text>'
+        )
+        parts.append(
+            f'<rect class="bar-speed" x="{left}" y="{y}" width="{length:.1f}" height="24" rx="3"/>'
+        )
+        parts.append(
+            f'<text class="value" x="{left + length + 10:.1f}" y="{y + 17}">{speedup:.1f}x</text>'
+        )
 
     parts.append("</svg>")
     path.write_text("\n".join(parts), encoding="utf-8")

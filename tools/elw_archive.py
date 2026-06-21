@@ -51,7 +51,9 @@ def align_up(value: int, alignment: int = ALIGNMENT) -> int:
     return ((value + alignment - 1) // alignment) * alignment
 
 
-def iter_named_tensors(tensors: Mapping[str, Any] | Iterable[tuple[str, Any]]) -> list[tuple[str, Any]]:
+def iter_named_tensors(
+    tensors: Mapping[str, Any] | Iterable[tuple[str, Any]],
+) -> list[tuple[str, Any]]:
     if isinstance(tensors, Mapping):
         return list(tensors.items())
     return list(tensors)
@@ -63,7 +65,9 @@ def tensor_to_export(name: str, tensor: Any) -> TensorExport:
     if dtype_code is None:
         raise ValueError(f"Unsupported dtype for export: {name} has {dtype_name}")
     if len(tensor.shape) > 8:
-        raise ValueError(f"Unsupported rank for export: {name} has rank {len(tensor.shape)}")
+        raise ValueError(
+            f"Unsupported rank for export: {name} has rank {len(tensor.shape)}"
+        )
     if len(name.encode("utf-8")) >= 128:
         raise ValueError(f"Tensor name too long for fixed record: {name}")
 
@@ -87,8 +91,7 @@ def write_archive(
     output_path: Path,
 ) -> list[dict[str, Any]]:
     exports = [
-        tensor_to_export(name, tensor)
-        for name, tensor in iter_named_tensors(tensors)
+        tensor_to_export(name, tensor) for name, tensor in iter_named_tensors(tensors)
     ]
 
     records_offset = HEADER_BYTES
@@ -152,4 +155,3 @@ def write_archive(
             handle.write(payload)
 
     return manifest_rows
-

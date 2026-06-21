@@ -120,9 +120,7 @@ def main() -> int:
             dtype=torch_module.float32,
         )
         conv_bn_expected = (
-            model.bn1(model.conv1(conv_bn_input.unsqueeze(0)))
-            .squeeze(0)
-            .contiguous()
+            model.bn1(model.conv1(conv_bn_input.unsqueeze(0))).squeeze(0).contiguous()
         )
 
     archive_path = args.output_dir / "conv1_bn1_golden.elw"
@@ -159,4 +157,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

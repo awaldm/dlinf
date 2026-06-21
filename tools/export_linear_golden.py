@@ -74,7 +74,7 @@ def main() -> int:
     # seed
     torch_module.manual_seed(args.seed)
 
-    # 
+    #
     in_features = int(model.fc.in_features)
     print("number of input features: " + str(in_features))
 
@@ -113,4 +113,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

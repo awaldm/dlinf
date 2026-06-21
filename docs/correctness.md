@@ -13,6 +13,7 @@ tolerance.
 | `fc_golden.elw` | `tools/export_linear_golden.py` | `fc` input and expected output |
 | `conv1_golden.elw` | `tools/export_conv_golden.py` | `conv1` input and expected output |
 | `conv1_bn1_golden.elw` | `tools/export_conv_bn_golden.py` | `conv1 -> bn1` input and expected output |
+| `layer1_0_basicblock_golden.elw` | `tools/export_basicblock_golden.py` | `layer1.0` BasicBlock input and expected output |
 
 ## Test Commands
 
@@ -22,6 +23,9 @@ make test-conv2d
 make test-conv-bn
 ```
 
+`tools/export_basicblock_golden.py` creates the next fixture, but C++
+BasicBlock validation is not implemented yet.
+
 ## Current Checks
 
 | Test | Implementations checked | Reference |
@@ -30,4 +34,4 @@ make test-conv-bn
 | `test-conv2d` | `conv2d_naive_direct`, `conv2d_im2col_eigen`, default `conv2d` | PyTorch `conv1` |
 | `test-conv-bn` | direct and im2col Conv2d paths followed by `batchnorm2d_direct` | PyTorch `conv1 -> bn1` |
 
-
+The broader coverage map is tracked in [ResNet-18 Coverage](resnet18_coverage.md).

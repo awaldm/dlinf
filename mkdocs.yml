@@ -27,6 +27,7 @@ theme:
 nav:
   - Overview: index.md
   - Validation: correctness.md
+  - ResNet-18 Coverage: resnet18_coverage.md
   - Implementation:
       - Overview: implementation.md
       - Linear: implementation/linear.md

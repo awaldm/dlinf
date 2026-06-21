@@ -47,6 +47,7 @@ Current reference model surface:
 | ResNet-18 `fc` | validated |
 | ResNet-18 `conv1` | validated |
 | ResNet-18 `conv1 -> bn1` | validated |
+| ResNet-18 `layer1.0` BasicBlock | golden fixture exporter added; C++ validation next |
 
 ## Build And Run
 

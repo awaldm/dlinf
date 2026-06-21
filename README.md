@@ -88,6 +88,18 @@ This writes:
 - `artifacts/resnet18/conv1_bn1_golden.elw`
 - `artifacts/resnet18/conv1_bn1_golden.json`
 
+Export the PyTorch golden fixture for the first identity BasicBlock,
+`layer1.0`:
+
+```bash
+uv run python tools/export_basicblock_golden.py --output-dir artifacts/resnet18
+```
+
+This writes:
+
+- `artifacts/resnet18/layer1_0_basicblock_golden.elw`
+- `artifacts/resnet18/layer1_0_basicblock_golden.json`
+
 ## Build And Run
 
 Eigen is header-only, but the build expects an installed Eigen3 package.

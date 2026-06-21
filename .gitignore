@@ -1,0 +1,25 @@
+# Build artifacts
+build/
+build*/
+artifacts/
+*.o
+
+# Generated/local tooling
+compile_commands.json
+.vscode/
+
+# Local notes and generated docs site
+.local/
+site/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Generated model/data blobs
+*.elw
+*.bin
+
+# Benchmark outputs: keep the curated baseline, ignore ad hoc runs
+benchmarks/results/*.jsonl
+!benchmarks/results/local_laptop_kernel_bench.jsonl

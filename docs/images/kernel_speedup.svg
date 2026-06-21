@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="270" viewBox="0 0 820 270" role="img"><style>text{font-family:Inter,Arial,sans-serif;fill:#1f2937}.title{font-size:18px;font-weight:700}.subtitle{font-size:12px;fill:#4b5563}.label{font-size:12px}.value{font-size:12px;font-weight:600}.axis{stroke:#d1d5db;stroke-width:1}.bar-direct{fill:#64748b}.bar-eigen{fill:#2563eb}.bar-speed{fill:#059669}</style>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text class="title" x="28" y="34">Eigen-backed speedup</text>
+<text class="subtitle" x="28" y="56">Median direct latency divided by median Eigen-backed latency.</text>
+<text class="label" x="28" y="102">Linear</text>
+<rect class="bar-speed" x="155" y="84" width="265.5" height="24" rx="3"/>
+<text class="value" x="430.5" y="101">9.1x</text>
+<text class="label" x="28" y="148">Conv1</text>
+<rect class="bar-speed" x="155" y="130" width="425.0" height="24" rx="3"/>
+<text class="value" x="590.0" y="147">14.5x</text>
+<text class="label" x="28" y="194">Conv1+BN</text>
+<rect class="bar-speed" x="155" y="176" width="414.9" height="24" rx="3"/>
+<text class="value" x="579.9" y="193">14.2x</text>
+</svg>

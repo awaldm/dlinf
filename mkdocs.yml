@@ -1,0 +1,50 @@
+site_name: dlinf
+site_description: C++/Eigen inference framework with PyTorch weight export tooling
+repo_url: https://github.com/awaldm/dlinf
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - content.code.copy
+    - content.code.annotate
+
+nav:
+  - Overview: index.md
+  - Validation: correctness.md
+  - Implementation:
+      - Overview: implementation.md
+      - Linear: implementation/linear.md
+      - Conv2d: implementation/conv2d.md
+      - BatchNorm2d: implementation/batchnorm2d.md
+      - Tensor Layout: implementation/tensor_layout.md
+  - Performance: performance.md
+  - Weight Archive: weight_archive_format.md
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - admonition
+  - footnotes
+  - attr_list

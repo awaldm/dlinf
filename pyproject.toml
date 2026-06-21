@@ -1,0 +1,29 @@
+[project]
+name = "eigen-learn"
+version = "0.1.0"
+description = "C++/Eigen deep-learning inference experiments with PyTorch weight export tooling."
+readme = "README.md"
+requires-python = ">=3.10,<3.15"
+dependencies = [
+    "numpy>=2.0",
+    "torch==2.12.0",
+    "torchvision==0.27.0",
+]
+
+[dependency-groups]
+dev = [
+    "mkdocs-material>=9.5.18",
+]
+
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cpu" },
+]
+torchvision = [
+    { index = "pytorch-cpu" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true

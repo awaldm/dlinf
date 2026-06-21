@@ -1,7 +1,7 @@
-# Eigen-Learn Weight Archive Format
+# dlinf Weight Archive Format
 
 The Stage 1 export format is a single little-endian binary file with extension
-`.elw` (`Eigen-Learn Weights`). It is intentionally flat and dependency-free so
+`.elw` (`dlinf Weights`). It is intentionally flat and dependency-free so
 the C++ loader can parse it with the standard library and expose tensor payloads
 as `Eigen::Map` views.
 
@@ -113,7 +113,7 @@ Other reasonable formats:
 | NPZ / HDF5 | Convenient scientific storage | More runtime dependency and less direct control over layout |
 | Custom flat binary | Alignment, offsets, raw bytes, simple C++ parser | Requires us to own versioning and validation |
 
-For Eigen-Learn, the custom flat archive is a conscious portfolio choice. It is
+For dlinf, the custom flat archive is a conscious portfolio choice. It is
 not meant to beat ONNX as a general ecosystem standard. It is meant to show the
 systems concerns that matter in an inference runtime:
 

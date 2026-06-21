@@ -3,7 +3,7 @@
 #include <cmath>
 #include <stdexcept>
 
-namespace eigen_learn {
+namespace dlinf {
 
 using RowMatrixXf = Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 
@@ -64,4 +64,4 @@ RowMatrixXf batchnorm2d(
     return batchnorm2d_direct(input, weight, bias, running_mean, running_var, epsilon);
 }
 
-}  // namespace eigen_learn
+}  // namespace dlinf

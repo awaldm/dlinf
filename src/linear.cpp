@@ -2,7 +2,7 @@
 
 #include <stdexcept>
 
-namespace eigen_learn {
+namespace dlinf {
 
 namespace {
 
@@ -74,4 +74,4 @@ Eigen::VectorXf linear(
     return linear_eigen(input, weight, bias);
 }
 
-}  // namespace eigen_learn
+}  // namespace dlinf

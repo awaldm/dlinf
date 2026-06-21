@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Audit and export TorchVision ResNet-18 weights for Eigen-Learn.
+"""Audit and export TorchVision ResNet-18 weights for dlinf.
 
 The JSON audit is for humans. The `.elw` archive is for the C++ runtime.
 """
@@ -163,7 +163,7 @@ def write_audit(
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Audit TorchVision ResNet-18 and export Eigen-Learn weights."
+        description="Audit TorchVision ResNet-18 and export dlinf weights."
     )
     parser.add_argument(
         "--weights",

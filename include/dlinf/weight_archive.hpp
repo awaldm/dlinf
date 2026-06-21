@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-namespace eigen_learn {
+namespace dlinf {
 
 enum class DType : std::uint32_t {
     Float32 = 1,
@@ -44,5 +44,5 @@ private:
     std::vector<TensorRecordMeta> records_;
 };
 
-}  // namespace eigen_learn
+}  // namespace dlinf
 

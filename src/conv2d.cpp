@@ -2,7 +2,7 @@
 
 #include <stdexcept>
 
-namespace eigen_learn {
+namespace dlinf {
 
 using RowMatrixXf = Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 
@@ -163,4 +163,4 @@ RowMatrixXf conv2d(
     return conv2d_naive_direct(input, weight, bias, stride, padding, height, width);
 }
 
-}  // namespace eigen_learn
+}  // namespace dlinf

@@ -6,7 +6,7 @@
 #include <limits>
 #include <stdexcept>
 
-namespace eigen_learn {
+namespace dlinf {
 namespace {
 
 constexpr char kMagic[8] = {'E', 'L', 'W', 'T', '0', '0', '0', '1'};
@@ -169,4 +169,4 @@ TensorViewF32 WeightArchive::tensor_f32(const std::string& name) const {
     return TensorViewF32(data, record->shape);
 }
 
-}  // namespace eigen_learn
+}  // namespace dlinf

@@ -240,10 +240,10 @@ Options parse_options(int argc, char** argv) {
 
 void benchmark_linear(
     const Options& options,
-    const eigen_learn::WeightArchive& weights,
+    const dlinf::WeightArchive& weights,
     const std::string& host,
     const std::string& cpu) {
-    const auto golden = eigen_learn::WeightArchive::load(options.fc_golden_path);
+    const auto golden = dlinf::WeightArchive::load(options.fc_golden_path);
     const auto fc_weight = weights.tensor_f32("fc.weight");
     const auto fc_bias = weights.tensor_f32("fc.bias");
     const auto input_view = golden.tensor_f32("fc.input");
@@ -275,26 +275,26 @@ void benchmark_linear(
     };
 
     run_case("linear_naive", [&]() {
-        return eigen_learn::linear_naive(input, fc_weight, fc_bias);
+        return dlinf::linear_naive(input, fc_weight, fc_bias);
     });
     run_case("linear_eigen", [&]() {
-        return eigen_learn::linear_eigen(input, fc_weight, fc_bias);
+        return dlinf::linear_eigen(input, fc_weight, fc_bias);
     });
 }
 
 void benchmark_conv1(
     const Options& options,
-    const eigen_learn::WeightArchive& weights,
+    const dlinf::WeightArchive& weights,
     const std::string& host,
     const std::string& cpu) {
-    const auto golden = eigen_learn::WeightArchive::load(options.conv_golden_path);
+    const auto golden = dlinf::WeightArchive::load(options.conv_golden_path);
     const auto conv1_weight = weights.tensor_f32("conv1.weight");
     const auto input_view = golden.tensor_f32("conv1.input");
     const auto expected_view = golden.tensor_f32("conv1.expected");
 
     const auto out_channels = conv1_weight.shape()[0];
     std::vector<float> zero_bias(out_channels, 0.0f);
-    const eigen_learn::TensorViewF32 conv1_bias(zero_bias.data(), {out_channels});
+    const dlinf::TensorViewF32 conv1_bias(zero_bias.data(), {out_channels});
 
     Eigen::Map<const RowMatrixXf> input(
         input_view.data(),
@@ -331,21 +331,21 @@ void benchmark_conv1(
     };
 
     run_case("conv2d_naive_direct", [&]() {
-        return eigen_learn::conv2d_naive_direct(
+        return dlinf::conv2d_naive_direct(
             input, conv1_weight, conv1_bias, kConv1Stride, kConv1Padding, height, width);
     });
     run_case("conv2d_im2col_eigen", [&]() {
-        return eigen_learn::conv2d_im2col_eigen(
+        return dlinf::conv2d_im2col_eigen(
             input, conv1_weight, conv1_bias, kConv1Stride, kConv1Padding, height, width);
     });
 }
 
 void benchmark_conv1_bn1(
     const Options& options,
-    const eigen_learn::WeightArchive& weights,
+    const dlinf::WeightArchive& weights,
     const std::string& host,
     const std::string& cpu) {
-    const auto golden = eigen_learn::WeightArchive::load(options.conv_bn_golden_path);
+    const auto golden = dlinf::WeightArchive::load(options.conv_bn_golden_path);
     const auto conv1_weight = weights.tensor_f32("conv1.weight");
     const auto bn1_weight = weights.tensor_f32("bn1.weight");
     const auto bn1_bias = weights.tensor_f32("bn1.bias");
@@ -356,7 +356,7 @@ void benchmark_conv1_bn1(
 
     const auto out_channels = conv1_weight.shape()[0];
     std::vector<float> zero_bias(out_channels, 0.0f);
-    const eigen_learn::TensorViewF32 conv1_bias(zero_bias.data(), {out_channels});
+    const dlinf::TensorViewF32 conv1_bias(zero_bias.data(), {out_channels});
 
     Eigen::Map<const RowMatrixXf> input(
         input_view.data(),
@@ -371,7 +371,7 @@ void benchmark_conv1_bn1(
     const auto width = static_cast<int>(input_view.shape()[2]);
 
     const auto batchnorm = [&](const RowMatrixXf& conv) {
-        return eigen_learn::batchnorm2d_direct(
+        return dlinf::batchnorm2d_direct(
             conv,
             bn1_weight,
             bn1_bias,
@@ -403,11 +403,11 @@ void benchmark_conv1_bn1(
     };
 
     run_case("conv2d_naive_direct_batchnorm2d_direct", [&]() {
-        return eigen_learn::conv2d_naive_direct(
+        return dlinf::conv2d_naive_direct(
             input, conv1_weight, conv1_bias, kConv1Stride, kConv1Padding, height, width);
     });
     run_case("conv2d_im2col_eigen_batchnorm2d_direct", [&]() {
-        return eigen_learn::conv2d_im2col_eigen(
+        return dlinf::conv2d_im2col_eigen(
             input, conv1_weight, conv1_bias, kConv1Stride, kConv1Padding, height, width);
     });
 }
@@ -417,7 +417,7 @@ void benchmark_conv1_bn1(
 int main(int argc, char** argv) {
     try {
         const Options options = parse_options(argc, argv);
-        const auto weights = eigen_learn::WeightArchive::load(options.weights_path);
+        const auto weights = dlinf::WeightArchive::load(options.weights_path);
         const std::string host = host_name();
         const std::string cpu = cpu_model();
 

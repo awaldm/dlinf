@@ -1,4 +1,4 @@
-"""Shared Eigen-Learn weight archive writer.
+"""Shared dlinf weight archive writer.
 
 The `.elw` format is intentionally simple: fixed-size metadata records followed
 by aligned raw tensor payloads. Keep all Python writers on this module so the

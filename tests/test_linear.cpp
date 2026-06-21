@@ -41,8 +41,8 @@ int main(int argc, char** argv) {
     const std::string golden_path = argv[2];
 
     try {
-        const auto archive = eigen_learn::WeightArchive::load(archive_path);
-        const auto golden = eigen_learn::WeightArchive::load(golden_path);
+        const auto archive = dlinf::WeightArchive::load(archive_path);
+        const auto golden = dlinf::WeightArchive::load(golden_path);
 
         const auto fc_weight = archive.tensor_f32("fc.weight");
         const auto fc_bias = archive.tensor_f32("fc.bias");
@@ -52,9 +52,9 @@ int main(int argc, char** argv) {
         Eigen::Map<const Eigen::VectorXf> input(input_view.data(), input_view.size());
         Eigen::Map<const Eigen::VectorXf> expected(expected_view.data(), expected_view.size());
 
-        const Eigen::VectorXf actual_naive = eigen_learn::linear_naive(input, fc_weight, fc_bias);
-        const Eigen::VectorXf actual_eigen = eigen_learn::linear_eigen(input, fc_weight, fc_bias);
-        const Eigen::VectorXf actual_default = eigen_learn::linear(input, fc_weight, fc_bias);
+        const Eigen::VectorXf actual_naive = dlinf::linear_naive(input, fc_weight, fc_bias);
+        const Eigen::VectorXf actual_eigen = dlinf::linear_eigen(input, fc_weight, fc_bias);
+        const Eigen::VectorXf actual_default = dlinf::linear(input, fc_weight, fc_bias);
 
         std::cout << "Linear golden test\n";
         std::cout << "  weights archive: " << archive_path << "\n";

@@ -17,7 +17,7 @@ Implemented operator variants include:
 
 ```text
 tools/audit_resnet18.py        ResNet-18 state_dict auditor and exporter
-docs/weight_archive_format.md  Eigen-Learn flat weight archive specification
+docs/weight_archive_format.md  dlinf flat weight archive specification
 include/dlinf/                 C++17 public headers
 src/                           C++ demo and loader implementation
 benchmarks/bench_kernels.cpp   JSONL kernel benchmark runner

@@ -9,6 +9,7 @@ DEMO_TARGET := $(BUILD_DIR)/dlinf_demo
 TEST_LINEAR_TARGET := $(BUILD_DIR)/test_linear
 TEST_CONV_TARGET := $(BUILD_DIR)/test_conv2d
 TEST_CONV_BN_TARGET := $(BUILD_DIR)/test_conv_bn
+TEST_ELEMENTWISE_TARGET := $(BUILD_DIR)/test_elementwise
 BENCH_KERNELS_TARGET := $(BUILD_DIR)/bench_kernels
 KERNEL_BENCH_RESULTS ?= $(BENCH_RESULTS_DIR)/local_laptop_kernel_bench.jsonl
 KERNEL_LATENCY_SVG ?= $(DOCS_IMAGES_DIR)/kernel_latency.svg
@@ -21,6 +22,7 @@ DEMO_SOURCES := src/main.cpp $(COMMON_SOURCES)
 TEST_LINEAR_SOURCES := tests/test_linear.cpp $(COMMON_SOURCES)
 TEST_CONV_SOURCES := tests/test_conv2d.cpp $(COMMON_SOURCES)
 TEST_CONV_BN_SOURCES := tests/test_conv_bn.cpp src/batchnorm2d.cpp $(COMMON_SOURCES)
+TEST_ELEMENTWISE_SOURCES := tests/test_elementwise.cpp
 BENCH_KERNELS_SOURCES := benchmarks/bench_kernels.cpp src/batchnorm2d.cpp $(COMMON_SOURCES)
 
 TARGETS := $(DEMO_TARGET)
@@ -36,8 +38,11 @@ else
 TARGETS += $(TEST_CONV_BN_TARGET)
 endif
 endif
+ifneq ($(wildcard tests/test_elementwise.cpp),)
+TARGETS += $(TEST_ELEMENTWISE_TARGET)
+endif
 
-.PHONY: all clean demo test-linear test-conv2d test-conv-bn bench-kernels bench-kernels-save plot-benchmarks
+.PHONY: all clean demo test-linear test-conv2d test-conv-bn test-elementwise bench-kernels bench-kernels-save plot-benchmarks
 
 all: $(TARGETS)
 
@@ -57,6 +62,9 @@ $(TEST_CONV_TARGET): $(TEST_CONV_SOURCES) | $(BUILD_DIR)
 
 $(TEST_CONV_BN_TARGET): $(TEST_CONV_BN_SOURCES) | $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) -Iinclude -I$(EIGEN_INCLUDE) $(TEST_CONV_BN_SOURCES) -o $(TEST_CONV_BN_TARGET)
+
+$(TEST_ELEMENTWISE_TARGET): $(TEST_ELEMENTWISE_SOURCES) | $(BUILD_DIR)
+	$(CXX) $(CXXFLAGS) -Iinclude -I$(EIGEN_INCLUDE) $(TEST_ELEMENTWISE_SOURCES) -o $(TEST_ELEMENTWISE_TARGET)
 
 $(BENCH_KERNELS_TARGET): $(BENCH_KERNELS_SOURCES) | $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) -DDLINF_CXXFLAGS='"$(CXXFLAGS)"' -Iinclude -I$(EIGEN_INCLUDE) $(BENCH_KERNELS_SOURCES) -o $(BENCH_KERNELS_TARGET)
@@ -82,6 +90,9 @@ else
 	@echo "Expected API: dlinf::batchnorm2d(input, weight, bias, running_mean, running_var, eps)"
 	@false
 endif
+
+test-elementwise: $(TEST_ELEMENTWISE_TARGET)
+	$(TEST_ELEMENTWISE_TARGET)
 
 bench-kernels: $(BENCH_KERNELS_TARGET)
 	$(BENCH_KERNELS_TARGET)

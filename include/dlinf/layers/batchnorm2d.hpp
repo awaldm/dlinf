@@ -3,7 +3,7 @@
 #include "dlinf/tensor.hpp"
 #include <Eigen/Core>
 
-namespace eigen_learn {
+namespace dlinf {
 
 Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> batchnorm2d_direct(
     const Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>>& input,
@@ -21,4 +21,4 @@ Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> batchnorm2
     const TensorViewF32& running_var,    // [C]
     float epsilon);
 
-}  // namespace eigen_learn
+}  // namespace dlinf

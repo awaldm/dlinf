@@ -48,8 +48,8 @@ int main(int argc, char** argv) {
     const std::string golden_path = argv[2];
 
     try {
-        const auto archive = eigen_learn::WeightArchive::load(archive_path);
-        const auto golden = eigen_learn::WeightArchive::load(golden_path);
+        const auto archive = dlinf::WeightArchive::load(archive_path);
+        const auto golden = dlinf::WeightArchive::load(golden_path);
 
         const auto conv1_weight = archive.tensor_f32("conv1.weight");
         const auto bn1_weight = archive.tensor_f32("bn1.weight");
@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
 
         const auto out_channels = conv1_weight.shape()[0];
         std::vector<float> zero_bias(out_channels, 0.0f);
-        eigen_learn::TensorViewF32 conv1_bias(zero_bias.data(), {out_channels});
+        dlinf::TensorViewF32 conv1_bias(zero_bias.data(), {out_channels});
 
         Eigen::Map<const RowMatrixXf> input(
             input_view.data(),
@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
 
         const auto height = static_cast<int>(input_view.shape()[1]);
         const auto width = static_cast<int>(input_view.shape()[2]);
-        const RowMatrixXf conv = eigen_learn::conv2d_naive_direct(
+        const RowMatrixXf conv = dlinf::conv2d_naive_direct(
             input,
             conv1_weight,
             conv1_bias,
@@ -82,7 +82,7 @@ int main(int argc, char** argv) {
             kConv1Padding,
             height,
             width);
-        const RowMatrixXf conv_im2col = eigen_learn::conv2d_im2col_eigen(
+        const RowMatrixXf conv_im2col = dlinf::conv2d_im2col_eigen(
             input,
             conv1_weight,
             conv1_bias,
@@ -90,21 +90,21 @@ int main(int argc, char** argv) {
             kConv1Padding,
             height,
             width);
-        const RowMatrixXf actual_direct = eigen_learn::batchnorm2d_direct(
+        const RowMatrixXf actual_direct = dlinf::batchnorm2d_direct(
             conv,
             bn1_weight,
             bn1_bias,
             bn1_running_mean,
             bn1_running_var,
             1e-5f);
-        const RowMatrixXf actual_im2col = eigen_learn::batchnorm2d_direct(
+        const RowMatrixXf actual_im2col = dlinf::batchnorm2d_direct(
             conv_im2col,
             bn1_weight,
             bn1_bias,
             bn1_running_mean,
             bn1_running_var,
             1e-5f);
-        const RowMatrixXf actual_default = eigen_learn::batchnorm2d(
+        const RowMatrixXf actual_default = dlinf::batchnorm2d(
             conv,
             bn1_weight,
             bn1_bias,

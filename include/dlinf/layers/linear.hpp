@@ -4,7 +4,7 @@
 
 #include <Eigen/Core>
 
-namespace eigen_learn {
+namespace dlinf {
 
 Eigen::VectorXf linear_naive(
     const Eigen::Ref<const Eigen::VectorXf>& input,
@@ -21,4 +21,4 @@ Eigen::VectorXf linear(
     const TensorViewF32& weight,
     const TensorViewF32& bias);
 
-}  // namespace eigen_learn
+}  // namespace dlinf

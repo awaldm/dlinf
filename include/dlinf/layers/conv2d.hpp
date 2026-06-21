@@ -4,7 +4,7 @@
 
 #include <Eigen/Core>
 
-namespace eigen_learn {
+namespace dlinf {
 
 Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> conv2d_naive_direct(
     const Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>>& input,
@@ -33,4 +33,4 @@ Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> conv2d(
     int height,
     int width);
 
-}  // namespace eigen_learn
+}  // namespace dlinf

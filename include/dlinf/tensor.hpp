@@ -7,7 +7,7 @@
 #include <utility>
 #include <vector>
 
-namespace eigen_learn {
+namespace dlinf {
 
 class TensorViewF32 {
 public:
@@ -40,4 +40,4 @@ private:
     std::size_t size_;
 };
 
-}  // namespace eigen_learn
+}  // namespace dlinf

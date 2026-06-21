@@ -23,7 +23,7 @@ void print_shape(const std::vector<std::uint64_t>& shape) {
 
 void run_relu_smoke_test() {
     std::vector<float> values = {-2.0f, -0.5f, 0.0f, 3.0f, 7.5f};
-    eigen_learn::relu_inplace(values.data(), values.size());
+    dlinf::relu_inplace(values.data(), values.size());
 
     std::cout << "ReLU smoke test:";
     for (float value : values) {
@@ -32,7 +32,7 @@ void run_relu_smoke_test() {
     std::cout << "\n";
 }
 
-void print_tensor_preview(const eigen_learn::TensorViewF32& t, const char* name) {
+void print_tensor_preview(const dlinf::TensorViewF32& t, const char* name) {
     std::cout << name << " shape ";
     print_shape(t.shape());
     std::cout << " elements=" << t.size() << "\n";
@@ -77,7 +77,7 @@ int main(int argc, char** argv) {
         }
         // Load the archive
         const std::string archive_path = argv[1];
-        const auto archive = eigen_learn::WeightArchive::load(archive_path);
+        const auto archive = dlinf::WeightArchive::load(archive_path);
         std::cout << "Loaded archive: " << archive_path << "\n";
         std::cout << "Tensor records: " << archive.records().size() << "\n";
 
@@ -91,7 +91,7 @@ int main(int argc, char** argv) {
 
         std::cout << "\n-----------------------------------\n";
 
-        //auto output = eigen_learn::linear(input, weight, bias);
+        //auto output = dlinf::linear(input, weight, bias);
 
         std::cout << "\n-----------------------------------\n";
 

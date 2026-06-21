@@ -46,13 +46,13 @@ int main(int argc, char** argv) {
     const int padding = 3;
 
     try {
-        const auto archive = eigen_learn::WeightArchive::load(archive_path);
-        const auto golden = eigen_learn::WeightArchive::load(golden_path);
+        const auto archive = dlinf::WeightArchive::load(archive_path);
+        const auto golden = dlinf::WeightArchive::load(golden_path);
 
         const auto conv1_weight = archive.tensor_f32("conv1.weight");
         const auto out_channels = conv1_weight.shape()[0]; // get the number of channels via NCHW from weights
         std::vector<float> zero_bias(out_channels, 0.0f);
-        eigen_learn::TensorViewF32 conv1_bias(zero_bias.data(), {out_channels}); // shape must be a vector of uint64_t, therefore the {}
+        dlinf::TensorViewF32 conv1_bias(zero_bias.data(), {out_channels}); // shape must be a vector of uint64_t, therefore the {}
         const auto input_view = golden.tensor_f32("conv1.input");
         const auto expected_view = golden.tensor_f32("conv1.expected");
         
@@ -66,11 +66,11 @@ int main(int argc, char** argv) {
         const auto height = input_view.shape()[1];
         const auto width = input_view.shape()[2];
         const RowMatrixXf actual_direct =
-            eigen_learn::conv2d_naive_direct(input, conv1_weight, conv1_bias, stride, padding, height, width);
+            dlinf::conv2d_naive_direct(input, conv1_weight, conv1_bias, stride, padding, height, width);
         const RowMatrixXf actual_im2col =
-            eigen_learn::conv2d_im2col_eigen(input, conv1_weight, conv1_bias, stride, padding, height, width);
+            dlinf::conv2d_im2col_eigen(input, conv1_weight, conv1_bias, stride, padding, height, width);
         const RowMatrixXf actual_default =
-            eigen_learn::conv2d(input, conv1_weight, conv1_bias, stride, padding, height, width);
+            dlinf::conv2d(input, conv1_weight, conv1_bias, stride, padding, height, width);
 
         std::cout << "Conv2D golden test\n";
         std::cout << "  weights archive: " << archive_path << "\n";

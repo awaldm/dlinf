@@ -1,24 +1,27 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="980" height="372" viewBox="0 0 980 372" role="img"><style>text{font-family:Inter,Arial,sans-serif;fill:#1f2937}.title{font-size:18px;font-weight:700}.subtitle{font-size:12px;fill:#4b5563}.label{font-size:12px}.value{font-size:12px;font-weight:600}.axis{stroke:#d1d5db;stroke-width:1}.bar-direct{fill:#64748b}.bar-eigen{fill:#2563eb}.bar-speed{fill:#059669}</style>
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="412" viewBox="0 0 980 412" role="img"><style>text{font-family:Inter,Arial,sans-serif;fill:#1f2937}.title{font-size:18px;font-weight:700}.subtitle{font-size:12px;fill:#4b5563}.label{font-size:12px}.value{font-size:12px;font-weight:600}.axis{stroke:#d1d5db;stroke-width:1}.bar-direct{fill:#64748b}.bar-eigen{fill:#2563eb}.bar-speed{fill:#059669}</style>
 <rect width="100%" height="100%" fill="#ffffff"/>
 <text class="title" x="28" y="34">Kernel latency</text>
 <text class="subtitle" x="28" y="56">Median latency in milliseconds. Bar length uses a log scale.</text>
 <line class="axis" x1="245" y1="72" x2="790" y2="72"/>
 <text class="label" x="28" y="102">Linear / direct</text>
-<rect class="bar-direct" x="245" y="84" width="159.1" height="22" rx="3"/>
-<text class="value" x="414.1" y="100">0.606 ms</text>
+<rect class="bar-direct" x="245" y="84" width="182.8" height="22" rx="3"/>
+<text class="value" x="437.8" y="100">1.351 ms</text>
 <text class="label" x="28" y="142">Linear / Eigen</text>
-<rect class="bar-eigen" x="245" y="124" width="14.6" height="22" rx="3"/>
-<text class="value" x="269.6" y="140">0.067 ms</text>
+<rect class="bar-eigen" x="245" y="124" width="13.3" height="22" rx="3"/>
+<text class="value" x="268.3" y="140">0.078 ms</text>
 <text class="label" x="28" y="182">Conv1 / direct</text>
-<rect class="bar-direct" x="245" y="164" width="535.7" height="22" rx="3"/>
-<text class="value" x="790.7" y="180">190.968 ms</text>
+<rect class="bar-direct" x="245" y="164" width="490.0" height="22" rx="3"/>
+<text class="value" x="745.0" y="180">236.974 ms</text>
 <text class="label" x="28" y="222">Conv1 / im2col+Eigen</text>
-<rect class="bar-eigen" x="245" y="204" width="360.4" height="22" rx="3"/>
-<text class="value" x="615.4" y="220">13.132 ms</text>
+<rect class="bar-eigen" x="245" y="204" width="335.2" height="22" rx="3"/>
+<text class="value" x="590.2" y="220">17.529 ms</text>
 <text class="label" x="28" y="262">Conv1+BN / direct</text>
-<rect class="bar-direct" x="245" y="244" width="535.8" height="22" rx="3"/>
-<text class="value" x="790.8" y="260">191.407 ms</text>
+<rect class="bar-direct" x="245" y="244" width="489.6" height="22" rx="3"/>
+<text class="value" x="744.6" y="260">235.484 ms</text>
 <text class="label" x="28" y="302">Conv1+BN / im2col+Eigen</text>
-<rect class="bar-eigen" x="245" y="284" width="362.1" height="22" rx="3"/>
-<text class="value" x="617.1" y="300">13.481 ms</text>
+<rect class="bar-eigen" x="245" y="284" width="333.9" height="22" rx="3"/>
+<text class="value" x="588.9" y="300">17.154 ms</text>
+<text class="label" x="28" y="342">layer1.0 / basicblock_direct</text>
+<rect class="bar-direct" x="245" y="324" width="536.7" height="22" rx="3"/>
+<text class="value" x="791.7" y="340">519.716 ms</text>
 </svg>

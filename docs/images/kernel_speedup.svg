@@ -3,12 +3,12 @@
 <text class="title" x="28" y="34">Eigen-backed speedup</text>
 <text class="subtitle" x="28" y="56">Median direct latency divided by median Eigen-backed latency.</text>
 <text class="label" x="28" y="102">Linear</text>
-<rect class="bar-speed" x="155" y="84" width="265.5" height="24" rx="3"/>
-<text class="value" x="430.5" y="101">9.1x</text>
+<rect class="bar-speed" x="155" y="84" width="425.0" height="24" rx="3"/>
+<text class="value" x="590.0" y="101">17.3x</text>
 <text class="label" x="28" y="148">Conv1</text>
-<rect class="bar-speed" x="155" y="130" width="425.0" height="24" rx="3"/>
-<text class="value" x="590.0" y="147">14.5x</text>
+<rect class="bar-speed" x="155" y="130" width="331.5" height="24" rx="3"/>
+<text class="value" x="496.5" y="147">13.5x</text>
 <text class="label" x="28" y="194">Conv1+BN</text>
-<rect class="bar-speed" x="155" y="176" width="414.9" height="24" rx="3"/>
-<text class="value" x="579.9" y="193">14.2x</text>
+<rect class="bar-speed" x="155" y="176" width="336.6" height="24" rx="3"/>
+<text class="value" x="501.6" y="193">13.7x</text>
 </svg>

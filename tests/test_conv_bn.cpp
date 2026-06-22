@@ -2,14 +2,12 @@
 #include "dlinf/layers/conv2d.hpp"
 #include "dlinf/tensor.hpp"
 #include "dlinf/weight_archive.hpp"
+#include "test_support.hpp"
 
 #include <Eigen/Core>
-#include <cstddef>
-#include <cstdint>
 #include <exception>
 #include <iostream>
 #include <string>
-#include <vector>
 
 namespace {
 
@@ -17,24 +15,7 @@ constexpr float kTolerance = 1e-5f;
 constexpr int kConv1Stride = 2;
 constexpr int kConv1Padding = 3;
 
-using RowMatrixXf = Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
-
-void print_shape(const std::vector<std::uint64_t>& shape) {
-    std::cout << "[";
-    for (std::size_t i = 0; i < shape.size(); ++i) {
-        if (i != 0) {
-            std::cout << ", ";
-        }
-        std::cout << shape[i];
-    }
-    std::cout << "]";
-}
-
-void print_tensor_shape(const char* label, const std::vector<std::uint64_t>& shape) {
-    std::cout << "  " << label;
-    print_shape(shape);
-    std::cout << "\n";
-}
+using RowMatrixXf = dlinf::test_support::RowMatrixXf;
 
 }  // namespace
 
@@ -60,17 +41,11 @@ int main(int argc, char** argv) {
         const auto expected_view = golden.tensor_f32("conv1_bn1.expected");
 
         const auto out_channels = conv1_weight.shape()[0];
-        std::vector<float> zero_bias(out_channels, 0.0f);
-        dlinf::TensorViewF32 conv1_bias(zero_bias.data(), {out_channels});
+        const auto zero_bias = dlinf::test_support::zero_bias_storage(out_channels);
+        const auto conv1_bias = dlinf::test_support::bias_view(zero_bias);
 
-        Eigen::Map<const RowMatrixXf> input(
-            input_view.data(),
-            static_cast<Eigen::Index>(input_view.shape()[0]),
-            static_cast<Eigen::Index>(input_view.shape()[1] * input_view.shape()[2]));
-        Eigen::Map<const RowMatrixXf> expected(
-            expected_view.data(),
-            static_cast<Eigen::Index>(expected_view.shape()[0]),
-            static_cast<Eigen::Index>(expected_view.shape()[1] * expected_view.shape()[2]));
+        const auto input = dlinf::test_support::map_chw_as_rows(input_view);
+        const auto expected = dlinf::test_support::map_chw_as_rows(expected_view);
 
         const auto height = static_cast<int>(input_view.shape()[1]);
         const auto width = static_cast<int>(input_view.shape()[2]);
@@ -115,11 +90,11 @@ int main(int argc, char** argv) {
         std::cout << "Conv2D + BatchNorm2D golden test\n";
         std::cout << "  weights archive: " << archive_path << "\n";
         std::cout << "  golden archive:  " << golden_path << "\n";
-        print_tensor_shape("input shape:    ", input_view.shape());
-        print_tensor_shape("conv weight shape: ", conv1_weight.shape());
-        print_tensor_shape("bn weight shape:   ", bn1_weight.shape());
-        print_tensor_shape("bn bias shape:     ", bn1_bias.shape());
-        print_tensor_shape("expected tensor shape: ", expected_view.shape());
+        dlinf::test_support::print_tensor_shape("input shape:    ", input_view.shape());
+        dlinf::test_support::print_tensor_shape("conv weight shape: ", conv1_weight.shape());
+        dlinf::test_support::print_tensor_shape("bn weight shape:   ", bn1_weight.shape());
+        dlinf::test_support::print_tensor_shape("bn bias shape:     ", bn1_bias.shape());
+        dlinf::test_support::print_tensor_shape("expected tensor shape: ", expected_view.shape());
         std::cout << "  conv comparison view:     [" << conv.rows() << " x " << conv.cols() << "]\n";
         std::cout << "  expected comparison view: [" << expected.rows() << " x " << expected.cols() << "]\n";
         std::cout << "  actual comparison view:   [" << actual_direct.rows() << " x " << actual_direct.cols() << "]\n";
@@ -132,11 +107,11 @@ int main(int argc, char** argv) {
             return 1;
         }
 
-        const float direct_max_abs_error = (actual_direct - expected).cwiseAbs().maxCoeff();
-        const float im2col_max_abs_error = (actual_im2col - expected).cwiseAbs().maxCoeff();
-        const float default_max_abs_error = (actual_default - expected).cwiseAbs().maxCoeff();
-        const float direct_im2col_max_abs_delta = (actual_direct - actual_im2col).cwiseAbs().maxCoeff();
-        const float direct_default_max_abs_delta = (actual_direct - actual_default).cwiseAbs().maxCoeff();
+        const float direct_max_abs_error = dlinf::test_support::max_abs_error(actual_direct, expected);
+        const float im2col_max_abs_error = dlinf::test_support::max_abs_error(actual_im2col, expected);
+        const float default_max_abs_error = dlinf::test_support::max_abs_error(actual_default, expected);
+        const float direct_im2col_max_abs_delta = dlinf::test_support::max_abs_error(actual_direct, actual_im2col);
+        const float direct_default_max_abs_delta = dlinf::test_support::max_abs_error(actual_direct, actual_default);
         std::cout << "  direct max abs error:  " << direct_max_abs_error << "\n";
         std::cout << "  im2col max abs error:  " << im2col_max_abs_error << "\n";
         std::cout << "  default max abs error: " << default_max_abs_error << "\n";

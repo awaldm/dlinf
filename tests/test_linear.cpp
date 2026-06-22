@@ -1,33 +1,14 @@
 #include "dlinf/layers/linear.hpp"
 #include "dlinf/weight_archive.hpp"
+#include "test_support.hpp"
 
-#include <cstddef>
-#include <cstdint>
 #include <exception>
 #include <iostream>
 #include <string>
-#include <vector>
 
 namespace {
 
 constexpr float kTolerance = 1e-5f;
-
-void print_shape(const std::vector<std::uint64_t>& shape) {
-    std::cout << "[";
-    for (std::size_t i = 0; i < shape.size(); ++i) {
-        if (i != 0) {
-            std::cout << ", ";
-        }
-        std::cout << shape[i];
-    }
-    std::cout << "]";
-}
-
-void print_tensor_shape(const char* label, const std::vector<std::uint64_t>& shape) {
-    std::cout << "  " << label;
-    print_shape(shape);
-    std::cout << "\n";
-}
 
 }  // namespace
 
@@ -49,8 +30,8 @@ int main(int argc, char** argv) {
         const auto input_view = golden.tensor_f32("fc.input");
         const auto expected_view = golden.tensor_f32("fc.expected");
 
-        Eigen::Map<const Eigen::VectorXf> input(input_view.data(), input_view.size());
-        Eigen::Map<const Eigen::VectorXf> expected(expected_view.data(), expected_view.size());
+        const auto input = dlinf::test_support::map_vector(input_view);
+        const auto expected = dlinf::test_support::map_vector(expected_view);
 
         const Eigen::VectorXf actual_naive = dlinf::linear_naive(input, fc_weight, fc_bias);
         const Eigen::VectorXf actual_eigen = dlinf::linear_eigen(input, fc_weight, fc_bias);
@@ -59,10 +40,10 @@ int main(int argc, char** argv) {
         std::cout << "Linear golden test\n";
         std::cout << "  weights archive: " << archive_path << "\n";
         std::cout << "  golden archive:  " << golden_path << "\n";
-        print_tensor_shape("input shape:    ", input_view.shape());
-        print_tensor_shape("weight shape:   ", fc_weight.shape());
-        print_tensor_shape("bias shape:     ", fc_bias.shape());
-        print_tensor_shape("expected shape: ", expected_view.shape());
+        dlinf::test_support::print_tensor_shape("input shape:    ", input_view.shape());
+        dlinf::test_support::print_tensor_shape("weight shape:   ", fc_weight.shape());
+        dlinf::test_support::print_tensor_shape("bias shape:     ", fc_bias.shape());
+        dlinf::test_support::print_tensor_shape("expected shape: ", expected_view.shape());
         std::cout << "  actual shape:   [" << actual_eigen.size() << "]\n";
 
         if (actual_naive.size() != expected.size() ||
@@ -73,10 +54,10 @@ int main(int argc, char** argv) {
             return 1;
         }
 
-        const float naive_max_abs_error = (actual_naive - expected).cwiseAbs().maxCoeff();
-        const float eigen_max_abs_error = (actual_eigen - expected).cwiseAbs().maxCoeff();
-        const float default_max_abs_error = (actual_default - expected).cwiseAbs().maxCoeff();
-        const float variant_max_abs_delta = (actual_naive - actual_eigen).cwiseAbs().maxCoeff();
+        const float naive_max_abs_error = dlinf::test_support::max_abs_error(actual_naive, expected);
+        const float eigen_max_abs_error = dlinf::test_support::max_abs_error(actual_eigen, expected);
+        const float default_max_abs_error = dlinf::test_support::max_abs_error(actual_default, expected);
+        const float variant_max_abs_delta = dlinf::test_support::max_abs_error(actual_naive, actual_eigen);
         std::cout << "  naive max abs error:   " << naive_max_abs_error << "\n";
         std::cout << "  eigen max abs error:   " << eigen_max_abs_error << "\n";
         std::cout << "  default max abs error: " << default_max_abs_error << "\n";

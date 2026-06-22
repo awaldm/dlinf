@@ -123,6 +123,7 @@ Run the validation tests:
 make test-linear
 make test-conv2d
 make test-conv-bn
+make test-basicblock
 ```
 
 Run the current kernel benchmark harness:

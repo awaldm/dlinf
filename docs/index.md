@@ -47,7 +47,7 @@ Current reference model surface:
 | ResNet-18 `fc` | validated |
 | ResNet-18 `conv1` | validated |
 | ResNet-18 `conv1 -> bn1` | validated |
-| ResNet-18 `layer1.0` BasicBlock | golden fixture exporter added; C++ validation next |
+| ResNet-18 `layer1.0` BasicBlock | validated; benchmark coverage next |
 
 ## Build And Run
 
@@ -59,6 +59,7 @@ uv run python tools/audit_resnet18.py --output-dir artifacts/resnet18
 uv run python tools/export_linear_golden.py --output-dir artifacts/resnet18
 uv run python tools/export_conv_golden.py --output-dir artifacts/resnet18
 uv run python tools/export_conv_bn_golden.py --output-dir artifacts/resnet18
+uv run python tools/export_basicblock_golden.py --output-dir artifacts/resnet18
 ```
 
 Build and run the validation targets:
@@ -67,6 +68,7 @@ Build and run the validation targets:
 make test-linear
 make test-conv2d
 make test-conv-bn
+make test-basicblock
 ```
 
 Run the kernel benchmark harness:

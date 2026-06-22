@@ -21,10 +21,8 @@ tolerance.
 make test-linear
 make test-conv2d
 make test-conv-bn
+make test-basicblock
 ```
-
-`tools/export_basicblock_golden.py` creates the next fixture, but C++
-BasicBlock validation is not implemented yet.
 
 ## Current Checks
 
@@ -33,5 +31,6 @@ BasicBlock validation is not implemented yet.
 | `test-linear` | `linear_naive`, `linear_eigen`, default `linear` | PyTorch `fc` |
 | `test-conv2d` | `conv2d_naive_direct`, `conv2d_im2col_eigen`, default `conv2d` | PyTorch `conv1` |
 | `test-conv-bn` | direct and im2col Conv2d paths followed by `batchnorm2d_direct` | PyTorch `conv1 -> bn1` |
+| `test-basicblock` | `basicblock_direct` identity residual block | PyTorch `layer1.0` |
 
 The broader coverage map is tracked in [ResNet-18 Coverage](resnet18_coverage.md).

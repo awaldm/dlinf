@@ -12,7 +12,7 @@ flowchart TB
     input["input image"]
     convbn["conv1 + bn1"]
     relupool["relu + maxpool"]
-    layer1["layer1<br/>layer1.0 exported<br/>layer1.1 planned"]
+    layer1["layer1<br/>layer1.0 validated<br/>layer1.1 planned"]
     layer2["layer2<br/>projection block planned<br/>identity block planned"]
     layer3["layer3<br/>projection block planned<br/>identity block planned"]
     layer4["layer4<br/>projection block planned<br/>identity block planned"]
@@ -24,8 +24,7 @@ flowchart TB
     classDef exported fill:#92400e,stroke:#f59e0b,color:#ffffff;
     classDef planned fill:#374151,stroke:#9ca3af,color:#ffffff;
 
-    class convbn,head validated;
-    class layer1 exported;
+    class convbn,layer1,head validated;
     class input,relupool,layer2,layer3,layer4 planned;
 ```
 
@@ -33,7 +32,7 @@ Legend:
 
 | Color | Meaning |
 |---|---|
-| Green | At least one part of the stage is validated and benchmarked in C++. |
+| Green | At least one part of the stage is validated in C++. |
 | Yellow | Golden exporter exists, but C++ validation is still planned. |
 | Gray | Planned only. |
 
@@ -80,7 +79,7 @@ projection/downsample skip path yet.
 | `fc` | `tools/export_linear_golden.py` | `make test-linear` | `make bench-kernels` | Validated and benchmarked |
 | `conv1` | `tools/export_conv_golden.py` | `make test-conv2d` | `make bench-kernels` | Validated and benchmarked |
 | `conv1 -> bn1` | `tools/export_conv_bn_golden.py` | `make test-conv-bn` | `make bench-kernels` | Validated and benchmarked |
-| `layer1.0` identity BasicBlock | `tools/export_basicblock_golden.py` | Planned | Planned | Golden exporter added |
+| `layer1.0` identity BasicBlock | `tools/export_basicblock_golden.py` | `make test-basicblock` | Planned | Validated; benchmark next |
 | Projection BasicBlocks | Planned | Planned | Planned | Requires downsample path |
 | Full ResNet-18 | Planned | Planned | Planned | After BasicBlock coverage |
 

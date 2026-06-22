@@ -38,7 +38,8 @@ Implemented operators:
 | `Linear` | `linear_naive` | `linear_eigen` |
 | `Conv2d` | `conv2d_naive_direct` | `conv2d_im2col_eigen` |
 | `BatchNorm2d` | `batchnorm2d_direct` | - |
-| ReLU | - | `relu_inplace` |
+| ReLU | `relu_inplace` | - |
+| ElementWiseAdd | `elementwise_add` | - |
 
 Current reference model surface:
 
@@ -47,7 +48,7 @@ Current reference model surface:
 | ResNet-18 `fc` | validated |
 | ResNet-18 `conv1` | validated |
 | ResNet-18 `conv1 -> bn1` | validated |
-| ResNet-18 `layer1.0` BasicBlock | validated; benchmark coverage next |
+| ResNet-18 `layer1.0` BasicBlock | validated and benchmarked |
 
 ## Build And Run
 

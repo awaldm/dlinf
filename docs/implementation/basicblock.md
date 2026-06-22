@@ -11,7 +11,7 @@ conv1 -> batchnorm -> relu -> conv2 -> batchnorm -> residual_add -> relu
 
 | Function | Status | Notes |
 |---|---|---|
-| `basicblock_direct` | validated | Uses direct Conv2D, direct BatchNorm2D, in-place ReLU, and checked elementwise residual add. |
+| `basicblock_direct` | validated and benchmarked | Uses direct Conv2D, direct BatchNorm2D, in-place ReLU, and checked elementwise residual add. |
 
 The implementation covers identity residual blocks only. The other blocks are projection/downsample blocks and need a separate skip-path
 implementation with `1x1` convolution and BatchNorm.

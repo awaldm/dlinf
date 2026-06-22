@@ -33,7 +33,7 @@ benchmarks/results/local_laptop_kernel_bench.jsonl
 ## Terms
 
 In this repository, a benchmark **kernel** is one measured inference operation
-or small composed block, such as `linear_fc`, `conv1`, or `conv1_bn1`. It does
+or small composed block, such as `linear_fc`, `conv1`, `conv1_bn1`, or `layer1.0`. It does
 not mean an operating-system kernel, CUDA kernel, or standalone GPU kernel.
 
 **Kernel latency** is the elapsed wall-clock time for one invocation of a

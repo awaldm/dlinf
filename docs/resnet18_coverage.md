@@ -12,7 +12,7 @@ flowchart TB
     input["input image"]
     convbn["conv1 + bn1"]
     relupool["relu + maxpool"]
-    layer1["layer1<br/>layer1.0 validated<br/>layer1.1 planned"]
+    layer1["layer1<br/>layer1.0 validated &amp; benchmarked<br/>layer1.1 planned"]
     layer2["layer2<br/>projection block planned<br/>identity block planned"]
     layer3["layer3<br/>projection block planned<br/>identity block planned"]
     layer4["layer4<br/>projection block planned<br/>identity block planned"]
@@ -79,7 +79,7 @@ projection/downsample skip path yet.
 | `fc` | `tools/export_linear_golden.py` | `make test-linear` | `make bench-kernels` | Validated and benchmarked |
 | `conv1` | `tools/export_conv_golden.py` | `make test-conv2d` | `make bench-kernels` | Validated and benchmarked |
 | `conv1 -> bn1` | `tools/export_conv_bn_golden.py` | `make test-conv-bn` | `make bench-kernels` | Validated and benchmarked |
-| `layer1.0` identity BasicBlock | `tools/export_basicblock_golden.py` | `make test-basicblock` | Planned | Validated; benchmark next |
+| `layer1.0` identity BasicBlock | `tools/export_basicblock_golden.py` | `make test-basicblock` | `make bench-kernels` | Validated and benchmarked |
 | Projection BasicBlocks | Planned | Planned | Planned | Requires downsample path |
 | Full ResNet-18 | Planned | Planned | Planned | After BasicBlock coverage |
 

@@ -61,6 +61,9 @@ uv run python tools/export_linear_golden.py --output-dir artifacts/resnet18
 uv run python tools/export_conv_golden.py --output-dir artifacts/resnet18
 uv run python tools/export_conv_bn_golden.py --output-dir artifacts/resnet18
 uv run python tools/export_basicblock_golden.py --output-dir artifacts/resnet18
+uv run python tools/export_maxpool_golden.py --output-dir artifacts/resnet18
+uv run python tools/export_avgpool_golden.py --output-dir artifacts/resnet18
+uv run python tools/export_projection_basicblock_golden.py --output-dir artifacts/resnet18
 ```
 
 Build and run the validation targets:

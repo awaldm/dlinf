@@ -14,6 +14,9 @@ tolerance.
 | `conv1_golden.elw` | `tools/export_conv_golden.py` | `conv1` input and expected output |
 | `conv1_bn1_golden.elw` | `tools/export_conv_bn_golden.py` | `conv1 -> bn1` input and expected output |
 | `layer1_0_basicblock_golden.elw` | `tools/export_basicblock_golden.py` | `layer1.0` BasicBlock input and expected output |
+| `maxpool_golden.elw` | `tools/export_maxpool_golden.py` | `maxpool` (stem) input and expected output |
+| `avgpool_golden.elw` | `tools/export_avgpool_golden.py` | `avgpool` (head) input and expected output |
+| `layer2_0_projection_basicblock_golden.elw` | `tools/export_projection_basicblock_golden.py` | `layer2.0` projection BasicBlock input and expected output |
 
 ## Test Commands
 
@@ -32,5 +35,8 @@ make test-basicblock
 | `test-conv2d` | `conv2d_naive_direct`, `conv2d_im2col_eigen`, default `conv2d` | PyTorch `conv1` |
 | `test-conv-bn` | direct and im2col Conv2d paths followed by `batchnorm2d_direct` | PyTorch `conv1 -> bn1` |
 | `test-basicblock` | `basicblock_direct` identity residual block | PyTorch `layer1.0` |
+| `test-maxpool` | planned | PyTorch `maxpool` |
+| `test-avgpool` | planned | PyTorch `avgpool` |
+| `test-projection-basicblock` | planned | PyTorch `layer2.0` |
 
 The broader coverage map is tracked in [ResNet-18 Coverage](resnet18_coverage.md).

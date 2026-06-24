@@ -27,6 +27,7 @@ make test-conv-bn
 make test-basicblock
 make test-maxpool
 make test-projection-basicblock
+make test-avgpool
 ```
 
 ## Current Checks
@@ -38,7 +39,7 @@ make test-projection-basicblock
 | `test-conv-bn` | direct and im2col Conv2d paths followed by `batchnorm2d_direct` | PyTorch `conv1 -> bn1` |
 | `test-basicblock` | `basicblock_direct` identity residual block | PyTorch `layer1.0` |
 | `test-maxpool` | `maxpool2d_direct` | PyTorch `maxpool` |
-| `test-avgpool` | planned | PyTorch `avgpool` |
+| `test-avgpool` | `avgpool2d_direct` | PyTorch `avgpool` |
 | `test-projection-basicblock` | `basicblock_direct` projection block | PyTorch `layer2.0` |
 
 The broader coverage map is tracked in [ResNet-18 Coverage](resnet18_coverage.md).

@@ -1,4 +1,5 @@
 #include "dlinf/blocks/basicblock.hpp"
+#include "dlinf/layers/avgpool2d.hpp"
 #include "dlinf/layers/batchnorm2d.hpp"
 #include "dlinf/layers/conv2d.hpp"
 #include "dlinf/layers/linear.hpp"
@@ -45,6 +46,7 @@ struct Options {
     std::string basicblock_golden_path = "artifacts/resnet18/layer1_0_basicblock_golden.elw";
     std::string maxpool_golden_path = "artifacts/resnet18/maxpool_golden.elw";
     std::string projection_basicblock_golden_path = "artifacts/resnet18/layer2_0_projection_basicblock_golden.elw";
+    std::string avgpool_golden_path = "artifacts/resnet18/avgpool_golden.elw";
     int warmup = 2;
     int iterations = 10;
 };
@@ -232,6 +234,8 @@ Options parse_options(int argc, char** argv) {
             options.maxpool_golden_path = require_value(arg);
         } else if (arg == "--projection-basicblock-golden") {
             options.projection_basicblock_golden_path = require_value(arg);
+        } else if (arg == "--avgpool-golden") {
+            options.avgpool_golden_path = require_value(arg);
         } else if (arg == "--warmup") {
             options.warmup = std::stoi(require_value(arg));
         } else if (arg == "--iterations") {
@@ -639,6 +643,58 @@ void benchmark_projection_basicblock(
     });
 }
 
+void benchmark_avgpool(
+    const Options& options,
+    const dlinf::WeightArchive& /*weights*/,
+    const std::string& host,
+    const std::string& cpu) {
+    const auto golden = dlinf::WeightArchive::load(options.avgpool_golden_path);
+
+    const auto input_view = golden.tensor_f32("avgpool.input");
+    const auto expected_view = golden.tensor_f32("avgpool.expected");
+
+    Eigen::Map<const RowMatrixXf> input(
+        input_view.data(),
+        static_cast<Eigen::Index>(input_view.shape()[0]),
+        static_cast<Eigen::Index>(input_view.shape()[1] * input_view.shape()[2]));
+    Eigen::Map<const RowMatrixXf> expected(
+        expected_view.data(),
+        static_cast<Eigen::Index>(expected_view.shape()[0]),
+        static_cast<Eigen::Index>(expected_view.shape()[1] * expected_view.shape()[2]));
+
+    const auto height = static_cast<int>(input_view.shape()[1]);
+    const auto width = static_cast<int>(input_view.shape()[2]);
+    constexpr int kernel_size = 7;
+    constexpr int stride = 1;
+    constexpr int padding = 0;
+
+    const auto run_case = [&](const std::string& impl, const auto& fn) {
+        const RowMatrixXf actual = fn();
+        const double max_abs_error = (actual - expected).cwiseAbs().maxCoeff();
+        require_close("avgpool/" + impl, max_abs_error);
+
+        const BenchmarkStats stats = run_benchmark(options.warmup, options.iterations, [&]() {
+            const RowMatrixXf output = fn();
+            return static_cast<double>(output.sum());
+        });
+        print_record(
+            "avgpool",
+            impl,
+            input_view.shape(),
+            {},
+            options.warmup,
+            options.iterations,
+            max_abs_error,
+            stats,
+            host,
+            cpu);
+    };
+
+    run_case("avgpool2d_direct", [&]() {
+        return dlinf::avgpool2d_direct(input, height, width, kernel_size, stride, padding);
+    });
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
@@ -654,6 +710,7 @@ int main(int argc, char** argv) {
         benchmark_basicblock(options, weights, host, cpu);
         benchmark_maxpool(options, weights, host, cpu);
         benchmark_projection_basicblock(options, weights, host, cpu);
+        benchmark_avgpool(options, weights, host, cpu);
 
         return 0;
     } catch (const std::exception& exc) {

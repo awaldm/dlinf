@@ -16,7 +16,7 @@ flowchart TB
     layer2["layer2<br/>projection block validated &amp; benchmarked<br/>identity block planned"]
     layer3["layer3<br/>projection block planned<br/>identity block planned"]
     layer4["layer4<br/>projection block planned<br/>identity block planned"]
-    head["head<br/>avgpool exported<br/>fc validated"]
+    head["head<br/>avgpool validated &amp; benchmarked<br/>fc validated"]
 
 
     input --> convbn --> relupool --> layer1 --> layer2 --> layer3 --> layer4 --> head
@@ -82,7 +82,7 @@ projection/downsample skip path yet.
 | `conv1 -> bn1` | `tools/export_conv_bn_golden.py` | `make test-conv-bn` | `make bench-kernels` | Validated and benchmarked |
 | `layer1.0` identity BasicBlock | `tools/export_basicblock_golden.py` | `make test-basicblock` | `make bench-kernels` | Validated and benchmarked |
 | `maxpool` (stem) | `tools/export_maxpool_golden.py` | `make test-maxpool` | `make bench-kernels` | Validated and benchmarked |
-| `avgpool` (head) | `tools/export_avgpool_golden.py` | Planned | Planned | Golden exporter added |
+| `avgpool` (head) | `tools/export_avgpool_golden.py` | `make test-avgpool` | `make bench-kernels` | Validated and benchmarked |
 | Projection BasicBlocks | `tools/export_projection_basicblock_golden.py` | `make test-projection-basicblock` | `make bench-kernels` | Validated and benchmarked |
 | `layer1.1` identity BasicBlock | reuse `export_basicblock_golden.py --block layer1.1` | Planned | Planned | Reuses existing exporter |
 | Full ResNet-18 | Planned | Planned | Planned | After BasicBlock coverage |

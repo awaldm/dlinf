@@ -84,6 +84,8 @@ RowMatrixXf basicblock_direct(
         static_cast<std::uint64_t>(height),
         static_cast<std::uint64_t>(width),
     };
+
+    // The skip connection: add all the output so far to the original input
     elementwise_add(bn2.data(), output_shape, input.data(), residual_shape);
 
     relu_inplace(bn2.data(), bn2.size());

@@ -11,7 +11,7 @@ executor.
 flowchart TB
     input["input image"]
     convbn["conv1 + bn1"]
-    relupool["relu + maxpool<br/>maxpool exporter added"]
+    relupool["relu + maxpool<br/>validated &amp; benchmarked"]
     layer1["layer1<br/>layer1.0 validated &amp; benchmarked<br/>layer1.1 planned"]
     layer2["layer2<br/>projection block exported<br/>identity block planned"]
     layer3["layer3<br/>projection block planned<br/>identity block planned"]
@@ -25,8 +25,8 @@ flowchart TB
     classDef exported fill:#92400e,stroke:#f59e0b,color:#ffffff;
     classDef planned fill:#374151,stroke:#9ca3af,color:#ffffff;
 
-    class convbn,layer1,head validated;
-    class relupool,layer2 exported;
+    class convbn,layer1,head,relupool validated;
+    class layer2 exported;
     class input,layer3,layer4 planned;
 ```
 
@@ -82,7 +82,7 @@ projection/downsample skip path yet.
 | `conv1` | `tools/export_conv_golden.py` | `make test-conv2d` | `make bench-kernels` | Validated and benchmarked |
 | `conv1 -> bn1` | `tools/export_conv_bn_golden.py` | `make test-conv-bn` | `make bench-kernels` | Validated and benchmarked |
 | `layer1.0` identity BasicBlock | `tools/export_basicblock_golden.py` | `make test-basicblock` | `make bench-kernels` | Validated and benchmarked |
-| `maxpool` (stem) | `tools/export_maxpool_golden.py` | Planned | Planned | Golden exporter added |
+| `maxpool` (stem) | `tools/export_maxpool_golden.py` | `make test-maxpool` | `make bench-kernels` | Validated and benchmarked |
 | `avgpool` (head) | `tools/export_avgpool_golden.py` | Planned | Planned | Golden exporter added |
 | Projection BasicBlocks | `tools/export_projection_basicblock_golden.py` | Planned | Planned | Golden exporter added |
 | `layer1.1` identity BasicBlock | reuse `export_basicblock_golden.py --block layer1.1` | Planned | Planned | Reuses existing exporter |

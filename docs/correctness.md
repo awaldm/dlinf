@@ -25,6 +25,7 @@ make test-linear
 make test-conv2d
 make test-conv-bn
 make test-basicblock
+make test-maxpool
 ```
 
 ## Current Checks
@@ -35,7 +36,7 @@ make test-basicblock
 | `test-conv2d` | `conv2d_naive_direct`, `conv2d_im2col_eigen`, default `conv2d` | PyTorch `conv1` |
 | `test-conv-bn` | direct and im2col Conv2d paths followed by `batchnorm2d_direct` | PyTorch `conv1 -> bn1` |
 | `test-basicblock` | `basicblock_direct` identity residual block | PyTorch `layer1.0` |
-| `test-maxpool` | planned | PyTorch `maxpool` |
+| `test-maxpool` | `maxpool2d_direct` | PyTorch `maxpool` |
 | `test-avgpool` | planned | PyTorch `avgpool` |
 | `test-projection-basicblock` | planned | PyTorch `layer2.0` |
 

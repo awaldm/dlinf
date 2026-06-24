@@ -2,6 +2,7 @@
 #include "dlinf/layers/batchnorm2d.hpp"
 #include "dlinf/layers/conv2d.hpp"
 #include "dlinf/layers/linear.hpp"
+#include "dlinf/layers/maxpool2d.hpp"
 #include "dlinf/weight_archive.hpp"
 
 #include <Eigen/Core>
@@ -42,6 +43,7 @@ struct Options {
     std::string conv_golden_path = "artifacts/resnet18/conv1_golden.elw";
     std::string conv_bn_golden_path = "artifacts/resnet18/conv1_bn1_golden.elw";
     std::string basicblock_golden_path = "artifacts/resnet18/layer1_0_basicblock_golden.elw";
+    std::string maxpool_golden_path = "artifacts/resnet18/maxpool_golden.elw";
     int warmup = 2;
     int iterations = 10;
 };
@@ -225,6 +227,8 @@ Options parse_options(int argc, char** argv) {
             options.conv_bn_golden_path = require_value(arg);
         } else if (arg == "--basicblock-golden") {
             options.basicblock_golden_path = require_value(arg);
+        } else if (arg == "--maxpool-golden") {
+            options.maxpool_golden_path = require_value(arg);
         } else if (arg == "--warmup") {
             options.warmup = std::stoi(require_value(arg));
         } else if (arg == "--iterations") {
@@ -490,6 +494,58 @@ void benchmark_basicblock(
     });
 }
 
+void benchmark_maxpool(
+    const Options& options,
+    const dlinf::WeightArchive& /*weights*/,
+    const std::string& host,
+    const std::string& cpu) {
+    const auto golden = dlinf::WeightArchive::load(options.maxpool_golden_path);
+
+    const auto input_view = golden.tensor_f32("maxpool.input");
+    const auto expected_view = golden.tensor_f32("maxpool.expected");
+
+    Eigen::Map<const RowMatrixXf> input(
+        input_view.data(),
+        static_cast<Eigen::Index>(input_view.shape()[0]),
+        static_cast<Eigen::Index>(input_view.shape()[1] * input_view.shape()[2]));
+    Eigen::Map<const RowMatrixXf> expected(
+        expected_view.data(),
+        static_cast<Eigen::Index>(expected_view.shape()[0]),
+        static_cast<Eigen::Index>(expected_view.shape()[1] * expected_view.shape()[2]));
+
+    const auto height = static_cast<int>(input_view.shape()[1]);
+    const auto width = static_cast<int>(input_view.shape()[2]);
+    constexpr int kernel_size = 3;
+    constexpr int stride = 2;
+    constexpr int padding = 1;
+
+    const auto run_case = [&](const std::string& impl, const auto& fn) {
+        const RowMatrixXf actual = fn();
+        const double max_abs_error = (actual - expected).cwiseAbs().maxCoeff();
+        require_close("maxpool/" + impl, max_abs_error);
+
+        const BenchmarkStats stats = run_benchmark(options.warmup, options.iterations, [&]() {
+            const RowMatrixXf output = fn();
+            return static_cast<double>(output.sum());
+        });
+        print_record(
+            "maxpool",
+            impl,
+            input_view.shape(),
+            {},
+            options.warmup,
+            options.iterations,
+            max_abs_error,
+            stats,
+            host,
+            cpu);
+    };
+
+    run_case("maxpool2d_direct", [&]() {
+        return dlinf::maxpool2d_direct(input, height, width, kernel_size, stride, padding);
+    });
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
@@ -503,6 +559,7 @@ int main(int argc, char** argv) {
         benchmark_conv1(options, weights, host, cpu);
         benchmark_conv1_bn1(options, weights, host, cpu);
         benchmark_basicblock(options, weights, host, cpu);
+        benchmark_maxpool(options, weights, host, cpu);
 
         return 0;
     } catch (const std::exception& exc) {

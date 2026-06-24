@@ -26,6 +26,7 @@ make test-conv2d
 make test-conv-bn
 make test-basicblock
 make test-maxpool
+make test-projection-basicblock
 ```
 
 ## Current Checks
@@ -38,6 +39,6 @@ make test-maxpool
 | `test-basicblock` | `basicblock_direct` identity residual block | PyTorch `layer1.0` |
 | `test-maxpool` | `maxpool2d_direct` | PyTorch `maxpool` |
 | `test-avgpool` | planned | PyTorch `avgpool` |
-| `test-projection-basicblock` | planned | PyTorch `layer2.0` |
+| `test-projection-basicblock` | `basicblock_direct` projection block | PyTorch `layer2.0` |
 
 The broader coverage map is tracked in [ResNet-18 Coverage](resnet18_coverage.md).

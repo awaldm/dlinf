@@ -1,6 +1,9 @@
 #include "dlinf/blocks/basicblock.hpp"
+#include "dlinf/activation.hpp"
+#include "dlinf/layers/batchnorm2d.hpp"
+#include "dlinf/layers/conv2d.hpp"
+#include "dlinf/ops/elementwise.hpp"
 
-#include <cmath>
 #include <cstdint>
 #include <stdexcept>
 #include <vector>
@@ -10,7 +13,7 @@ namespace dlinf {
 using RowMatrixXf = Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 
 RowMatrixXf basicblock_direct(
-    const Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>>& input,
+    const Eigen::Ref<const RowMatrixXf>& input,
     const TensorViewF32& conv1_weight,
     const TensorViewF32& conv1_bias,
     const TensorViewF32& bn1_weight,
@@ -23,79 +26,83 @@ RowMatrixXf basicblock_direct(
     const TensorViewF32& bn2_bias,
     const TensorViewF32& bn2_running_mean,
     const TensorViewF32& bn2_running_var,
+    const TensorViewF32& downsample_conv_weight,
+    const TensorViewF32& downsample_conv_bias,
+    const TensorViewF32& downsample_bn_weight,
+    const TensorViewF32& downsample_bn_bias,
+    const TensorViewF32& downsample_bn_running_mean,
+    const TensorViewF32& downsample_bn_running_var,
     int stride,
     int padding,
     int height,
     int width,
     float bn_epsilon) {
+
     const auto spatial_size = static_cast<Eigen::Index>(height) * static_cast<Eigen::Index>(width);
     if (input.cols() != spatial_size) {
         throw std::invalid_argument("basicblock_direct input shape does not match height * width");
     }
 
-    RowMatrixXf conv1 = dlinf::conv2d_naive_direct(
-        input,
-        conv1_weight,
-        conv1_bias,
-        stride,
-        padding,
-        height,
-        width);
+    // conv1
+    auto out = conv2d_naive_direct(input, conv1_weight, conv1_bias, stride, padding, height, width);
+    auto H_mid = (height + 2 * padding - 3) / stride + 1;
+    auto W_mid = (width + 2 * padding - 3) / stride + 1;
 
-    RowMatrixXf bn1 = dlinf::batchnorm2d_direct(
-        conv1,
-        bn1_weight,
-        bn1_bias,
-        bn1_running_mean,
-        bn1_running_var,
-        bn_epsilon);
+    // bn1
+    out = batchnorm2d_direct(out, bn1_weight, bn1_bias, bn1_running_mean, bn1_running_var, bn_epsilon);
 
+    // relu
+    relu_inplace(out.data(), out.size());
 
-    relu_inplace(bn1.data(),  bn1.size()); // RowMatrixXf .data() returns float*, so that works
-    RowMatrixXf conv2 = dlinf::conv2d_naive_direct(
-        bn1, // Eigen array 
-        conv2_weight, // TensorViewF32
-        conv2_bias,
-        1, // stride is always 1 in the second conv in a resnet
-        padding,
-        height,
-        width);        
+    // conv2 (always stride=1)
+    out = conv2d_naive_direct(out, conv2_weight, conv2_bias, 1, padding, H_mid, W_mid);
+    auto H_out = (H_mid + 2 * padding - 3) / 1 + 1;
+    auto W_out = (W_mid + 2 * padding - 3) / 1 + 1;
 
-    RowMatrixXf bn2 = dlinf::batchnorm2d_direct(
-        conv2,
-        bn2_weight,
-        bn2_bias,
-        bn2_running_mean,
-        bn2_running_var,
-        bn_epsilon);
-    if (bn2.cols() != spatial_size) {
-        throw std::invalid_argument("basicblock_direct output shape does not match height * width");
+    // bn2
+    out = batchnorm2d_direct(out, bn2_weight, bn2_bias, bn2_running_mean, bn2_running_var, bn_epsilon);
+
+    if (H_out <= 0 || W_out <= 0) {
+        throw std::invalid_argument("basicblock_direct output shape is empty");
     }
 
-    // Identity skip connection: the residual tensor and the block output must
-    // have the same [C, H, W] shape before they can be added.
-    const std::vector<std::uint64_t> output_shape{
-        static_cast<std::uint64_t>(bn2.rows()),
-        static_cast<std::uint64_t>(height),
-        static_cast<std::uint64_t>(width),
-    };
-    const std::vector<std::uint64_t> residual_shape{
-        static_cast<std::uint64_t>(input.rows()),
-        static_cast<std::uint64_t>(height),
-        static_cast<std::uint64_t>(width),
-    };
+    // skip connection: projection if dimensions differ, identity otherwise
+    const auto out_spatial = static_cast<Eigen::Index>(H_out) * static_cast<Eigen::Index>(W_out);
+    if (out.rows() != input.rows() || out_spatial != spatial_size) {
+        // Projection: 1x1 conv + BN on skip input to match channel and spatial dims
+        auto skip = conv2d_naive_direct(input, downsample_conv_weight, downsample_conv_bias,
+                                         stride, 0, height, width);
+        skip = batchnorm2d_direct(skip, downsample_bn_weight, downsample_bn_bias,
+                                   downsample_bn_running_mean, downsample_bn_running_var, bn_epsilon);
 
-    // The skip connection: add all the output so far to the original input
-    elementwise_add(bn2.data(), output_shape, input.data(), residual_shape);
+        const std::vector<std::uint64_t> out_shape{
+            static_cast<std::uint64_t>(out.rows()),
+            static_cast<std::uint64_t>(H_out),
+            static_cast<std::uint64_t>(W_out),
+        };
+        const std::vector<std::uint64_t> skip_shape{
+            static_cast<std::uint64_t>(skip.rows()),
+            static_cast<std::uint64_t>(H_out),
+            static_cast<std::uint64_t>(W_out),
+        };
+        elementwise_add(out.data(), out_shape, skip.data(), skip_shape);
+    } else {
+        const std::vector<std::uint64_t> out_shape{
+            static_cast<std::uint64_t>(out.rows()),
+            static_cast<std::uint64_t>(H_out),
+            static_cast<std::uint64_t>(W_out),
+        };
+        const std::vector<std::uint64_t> input_shape{
+            static_cast<std::uint64_t>(input.rows()),
+            static_cast<std::uint64_t>(height),
+            static_cast<std::uint64_t>(width),
+        };
+        elementwise_add(out.data(), out_shape, input.data(), input_shape);
+    }
 
-    relu_inplace(bn2.data(), bn2.size());
-    return bn2;
+    // final relu
+    relu_inplace(out.data(), out.size());
+    return out;
 }
-/*
-        self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=stride, padding=1, bias=False)
-        self.bn1 = nn.BatchNorm2d(out_channels)
-        self.relu = nn.ReLU(inplace=True)
-        self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=3, stride=1, padding=1, bias=False)
-        self.bn2 = nn.BatchNorm2d(out_channels)
-        */
+
 }  // namespace dlinf

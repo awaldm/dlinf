@@ -44,6 +44,7 @@ struct Options {
     std::string conv_bn_golden_path = "artifacts/resnet18/conv1_bn1_golden.elw";
     std::string basicblock_golden_path = "artifacts/resnet18/layer1_0_basicblock_golden.elw";
     std::string maxpool_golden_path = "artifacts/resnet18/maxpool_golden.elw";
+    std::string projection_basicblock_golden_path = "artifacts/resnet18/layer2_0_projection_basicblock_golden.elw";
     int warmup = 2;
     int iterations = 10;
 };
@@ -229,6 +230,8 @@ Options parse_options(int argc, char** argv) {
             options.basicblock_golden_path = require_value(arg);
         } else if (arg == "--maxpool-golden") {
             options.maxpool_golden_path = require_value(arg);
+        } else if (arg == "--projection-basicblock-golden") {
+            options.projection_basicblock_golden_path = require_value(arg);
         } else if (arg == "--warmup") {
             options.warmup = std::stoi(require_value(arg));
         } else if (arg == "--iterations") {
@@ -462,6 +465,10 @@ void benchmark_basicblock(
     const int padding = 1;
     const float bn_epsilon = 1e-5f;
 
+    // Identity block: dummy downsample tensors (never entered)
+    std::vector<float> dummy_storage(1, 0.0f);
+    const dlinf::TensorViewF32 dummy(dummy_storage.data(), {1});
+
     const auto run_case = [&](const std::string& impl, const auto& fn) {
         const RowMatrixXf actual = fn();
         const double max_abs_error = (actual - expected).cwiseAbs().maxCoeff();
@@ -490,6 +497,7 @@ void benchmark_basicblock(
             bn1_weight, bn1_bias, bn1_running_mean, bn1_running_var,
             conv2_weight, conv2_bias,
             bn2_weight, bn2_bias, bn2_running_mean, bn2_running_var,
+            dummy, dummy, dummy, dummy, dummy, dummy,
             stride, padding, height, width, bn_epsilon);
     });
 }
@@ -546,6 +554,91 @@ void benchmark_maxpool(
     });
 }
 
+void benchmark_projection_basicblock(
+    const Options& options,
+    const dlinf::WeightArchive& weights,
+    const std::string& host,
+    const std::string& cpu) {
+
+    const auto golden = dlinf::WeightArchive::load(options.projection_basicblock_golden_path);
+
+    const auto conv1_weight = weights.tensor_f32("layer2.0.conv1.weight");
+    const auto bn1_weight = weights.tensor_f32("layer2.0.bn1.weight");
+    const auto bn1_bias = weights.tensor_f32("layer2.0.bn1.bias");
+    const auto bn1_running_mean = weights.tensor_f32("layer2.0.bn1.running_mean");
+    const auto bn1_running_var = weights.tensor_f32("layer2.0.bn1.running_var");
+    const auto conv2_weight = weights.tensor_f32("layer2.0.conv2.weight");
+    const auto bn2_weight = weights.tensor_f32("layer2.0.bn2.weight");
+    const auto bn2_bias = weights.tensor_f32("layer2.0.bn2.bias");
+    const auto bn2_running_mean = weights.tensor_f32("layer2.0.bn2.running_mean");
+    const auto bn2_running_var = weights.tensor_f32("layer2.0.bn2.running_var");
+    const auto ds_conv_weight = weights.tensor_f32("layer2.0.downsample.0.weight");
+    const auto ds_bn_weight = weights.tensor_f32("layer2.0.downsample.1.weight");
+    const auto ds_bn_bias = weights.tensor_f32("layer2.0.downsample.1.bias");
+    const auto ds_bn_running_mean = weights.tensor_f32("layer2.0.downsample.1.running_mean");
+    const auto ds_bn_running_var = weights.tensor_f32("layer2.0.downsample.1.running_var");
+
+    const auto out_channels = conv1_weight.shape()[0];
+    std::vector<float> zero_bias(out_channels, 0.0f);
+    const dlinf::TensorViewF32 conv1_bias(zero_bias.data(), {out_channels});
+    const dlinf::TensorViewF32 conv2_bias(zero_bias.data(), {out_channels});
+
+    const auto ds_out_channels = ds_conv_weight.shape()[0];
+    std::vector<float> ds_zero_bias(ds_out_channels, 0.0f);
+    const dlinf::TensorViewF32 ds_conv_bias(ds_zero_bias.data(), {ds_out_channels});
+
+    const auto input_view = golden.tensor_f32("layer2.0.input");
+    const auto expected_view = golden.tensor_f32("layer2.0.expected");
+
+    Eigen::Map<const RowMatrixXf> input(
+        input_view.data(),
+        static_cast<Eigen::Index>(input_view.shape()[0]),
+        static_cast<Eigen::Index>(input_view.shape()[1] * input_view.shape()[2]));
+    Eigen::Map<const RowMatrixXf> expected(
+        expected_view.data(),
+        static_cast<Eigen::Index>(expected_view.shape()[0]),
+        static_cast<Eigen::Index>(expected_view.shape()[1] * expected_view.shape()[2]));
+
+    const auto height = static_cast<int>(input_view.shape()[1]);
+    const auto width = static_cast<int>(input_view.shape()[2]);
+    const int stride = 2;
+    const int padding = 1;
+    const float bn_epsilon = 1e-5f;
+
+    const auto run_case = [&](const std::string& impl, const auto& fn) {
+        const RowMatrixXf actual = fn();
+        const double max_abs_error = (actual - expected).cwiseAbs().maxCoeff();
+        require_close("layer2.0/" + impl, max_abs_error);
+
+        const BenchmarkStats stats = run_benchmark(options.warmup, options.iterations, [&]() {
+            const RowMatrixXf output = fn();
+            return static_cast<double>(output.sum());
+        });
+        print_record(
+            "layer2.0",
+            impl,
+            input_view.shape(),
+            conv1_weight.shape(),
+            options.warmup,
+            options.iterations,
+            max_abs_error,
+            stats,
+            host,
+            cpu);
+    };
+
+    run_case("basicblock_direct", [&]() {
+        return dlinf::basicblock_direct(
+            input, conv1_weight, conv1_bias,
+            bn1_weight, bn1_bias, bn1_running_mean, bn1_running_var,
+            conv2_weight, conv2_bias,
+            bn2_weight, bn2_bias, bn2_running_mean, bn2_running_var,
+            ds_conv_weight, ds_conv_bias,
+            ds_bn_weight, ds_bn_bias, ds_bn_running_mean, ds_bn_running_var,
+            stride, padding, height, width, bn_epsilon);
+    });
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
@@ -560,6 +653,7 @@ int main(int argc, char** argv) {
         benchmark_conv1_bn1(options, weights, host, cpu);
         benchmark_basicblock(options, weights, host, cpu);
         benchmark_maxpool(options, weights, host, cpu);
+        benchmark_projection_basicblock(options, weights, host, cpu);
 
         return 0;
     } catch (const std::exception& exc) {

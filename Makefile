@@ -13,6 +13,7 @@ TEST_CONV_BN_TARGET := $(BUILD_DIR)/test_conv_bn
 TEST_ELEMENTWISE_TARGET := $(BUILD_DIR)/test_elementwise
 TEST_BASICBLOCK_TARGET := $(BUILD_DIR)/test_basicblock
 TEST_MAXPOOL_TARGET := $(BUILD_DIR)/test_maxpool
+TEST_PROJECTION_BASICBLOCK_TARGET := $(BUILD_DIR)/test_projection_basicblock
 BENCH_KERNELS_TARGET := $(BUILD_DIR)/bench_kernels
 KERNEL_BENCH_RESULTS ?= $(BENCH_RESULTS_DIR)/local_laptop_kernel_bench.jsonl
 KERNEL_LATENCY_SVG ?= $(DOCS_IMAGES_DIR)/kernel_latency.svg
@@ -28,6 +29,7 @@ TEST_CONV_BN_SOURCES := tests/test_conv_bn.cpp src/batchnorm2d.cpp $(COMMON_SOUR
 TEST_ELEMENTWISE_SOURCES := tests/test_elementwise.cpp
 TEST_BASICBLOCK_SOURCES := tests/test_basicblock.cpp src/batchnorm2d.cpp src/basicblock.cpp $(COMMON_SOURCES)
 TEST_MAXPOOL_SOURCES := tests/test_maxpool.cpp src/maxpool2d.cpp $(COMMON_SOURCES)
+TEST_PROJECTION_BASICBLOCK_SOURCES := tests/test_projection_basicblock.cpp src/batchnorm2d.cpp src/basicblock.cpp $(COMMON_SOURCES)
 BENCH_KERNELS_SOURCES := benchmarks/bench_kernels.cpp src/batchnorm2d.cpp src/basicblock.cpp src/maxpool2d.cpp $(COMMON_SOURCES)
 
 TARGETS := $(DEMO_TARGET)
@@ -52,8 +54,11 @@ endif
 ifneq ($(wildcard tests/test_maxpool.cpp),)
 TARGETS += $(TEST_MAXPOOL_TARGET)
 endif
+ifneq ($(wildcard tests/test_projection_basicblock.cpp),)
+TARGETS += $(TEST_PROJECTION_BASICBLOCK_TARGET)
+endif
 
-.PHONY: all clean demo test-linear test-conv2d test-conv-bn test-elementwise test-basicblock test-maxpool bench-kernels bench-kernels-save plot-benchmarks
+.PHONY: all clean demo test-linear test-conv2d test-conv-bn test-elementwise test-basicblock test-maxpool test-projection-basicblock bench-kernels bench-kernels-save plot-benchmarks
 
 all: $(TARGETS)
 
@@ -82,6 +87,9 @@ $(TEST_BASICBLOCK_TARGET): $(TEST_BASICBLOCK_SOURCES) | $(BUILD_DIR)
 
 $(TEST_MAXPOOL_TARGET): $(TEST_MAXPOOL_SOURCES) | $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) -Iinclude -I$(SUPPORT_INCLUDE) -I$(EIGEN_INCLUDE) $(TEST_MAXPOOL_SOURCES) -o $(TEST_MAXPOOL_TARGET)
+
+$(TEST_PROJECTION_BASICBLOCK_TARGET): $(TEST_PROJECTION_BASICBLOCK_SOURCES) | $(BUILD_DIR)
+	$(CXX) $(CXXFLAGS) -Iinclude -I$(SUPPORT_INCLUDE) -I$(EIGEN_INCLUDE) $(TEST_PROJECTION_BASICBLOCK_SOURCES) -o $(TEST_PROJECTION_BASICBLOCK_TARGET)
 
 $(BENCH_KERNELS_TARGET): $(BENCH_KERNELS_SOURCES) | $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) -DDLINF_CXXFLAGS='"$(CXXFLAGS)"' -Iinclude -I$(SUPPORT_INCLUDE) -I$(EIGEN_INCLUDE) $(BENCH_KERNELS_SOURCES) -o $(BENCH_KERNELS_TARGET)
@@ -119,6 +127,11 @@ test-basicblock: $(TEST_BASICBLOCK_TARGET)
 test-maxpool: $(TEST_MAXPOOL_TARGET)
 	$(TEST_MAXPOOL_TARGET) \
 		artifacts/resnet18/maxpool_golden.elw
+
+test-projection-basicblock: $(TEST_PROJECTION_BASICBLOCK_TARGET)
+	$(TEST_PROJECTION_BASICBLOCK_TARGET) \
+		artifacts/resnet18/resnet18_imagenet1k_v1.elw \
+		artifacts/resnet18/layer2_0_projection_basicblock_golden.elw
 
 bench-kernels: $(BENCH_KERNELS_TARGET)
 	$(BENCH_KERNELS_TARGET)

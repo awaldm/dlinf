@@ -64,6 +64,10 @@ int main(int argc, char** argv) {
         const auto conv1_bias = dlinf::test_support::bias_view(zero_bias);
         const auto conv2_bias = dlinf::test_support::bias_view(zero_bias);
 
+        // Identity block: downsample not needed; pass dummy tensors
+        const auto dummy_bias = dlinf::test_support::zero_bias_storage(1);
+        const auto dummy_view = dlinf::test_support::bias_view(dummy_bias);
+
         // Call the basicblock to run inference on the input
         const RowMatrixXf actual_direct = dlinf::basicblock_direct(
             input,
@@ -79,6 +83,8 @@ int main(int argc, char** argv) {
             bn2_bias,
             bn2_running_mean,
             bn2_running_var,
+            dummy_view, dummy_view,
+            dummy_view, dummy_view, dummy_view, dummy_view,
             stride,
             padding,
             height,

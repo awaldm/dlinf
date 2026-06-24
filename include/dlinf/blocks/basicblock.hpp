@@ -24,11 +24,16 @@ Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> basicblock
     const TensorViewF32& bn2_bias,
     const TensorViewF32& bn2_running_mean,
     const TensorViewF32& bn2_running_var,
+    const TensorViewF32& downsample_conv_weight,
+    const TensorViewF32& downsample_conv_bias,
+    const TensorViewF32& downsample_bn_weight,
+    const TensorViewF32& downsample_bn_bias,
+    const TensorViewF32& downsample_bn_running_mean,
+    const TensorViewF32& downsample_bn_running_var,
     int stride,
     int padding,
     int height,
     int width,
     float bn_epsilon);
-
 
 }  // namespace dlinf

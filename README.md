@@ -1,26 +1,64 @@
 # dlinf
 
-C++/Eigen inference framework with PyTorch weight export tooling.
+`dlinf` (for deep learning inference, duh) is a small C++/Eigen inference validation and benchmark harness.
 
-The current implementation loads public TorchVision ResNet-18 weights, exports
-PyTorch reference tensors, and validates selected C++ inference operators
-against those references.
+It executes TorchVision ResNet-18 in a small C++ runtime, validates the C++
+outputs against PyTorch-generated golden fixtures, and records benchmark results
+for selected operator and block implementations.
 
-Implemented operator variants include:
+The goal is not to provide a production inference library. I aim to make
+the inference path inspectable: weights, tensor layouts, operator composition,
+numerical agreement, and timing are all explicit.
 
-- `linear_naive` and `linear_eigen`,
-- `conv2d_naive_direct` and `conv2d_im2col_eigen`,
-- `batchnorm2d_direct`,
-- Eigen-backed in-place ReLU.
 
-## Layout
+## What This Is
 
-```text
-tools/audit_resnet18.py        ResNet-18 state_dict auditor and exporter
-docs/weight_archive_format.md  dlinf flat weight archive specification
-include/dlinf/                 C++17 public headers
-src/                           C++ demo and loader implementation
-benchmarks/bench_kernels.cpp   JSONL kernel benchmark runner
+- A controlled C++ inference-runtime study.
+- A validation harness for comparing C++ outputs against PyTorch.
+- A small benchmark suite for inference operators, blocks, and full ResNet-18.
+- A way to inspect implementation choices such as direct convolution vs. im2col + Eigen.
+
+## What This Is Not
+
+- A production inference runtime.
+- A TensorRT, ONNX Runtime, or OpenVINO replacement.
+- A new neural-network architecture.
+- A high performance library (it is mostly unvectorized C++).
+
+
+## Core Principle
+
+Before benchmarking a C++ inference path, verify that it matches the PyTorch
+reference numerically.
+
+For each measured operator or block, `dlinf` exports a PyTorch golden fixture,
+runs the equivalent C++ implementation on the same inputs and weights, checks
+the maximum absolute error, and only then records timing results.
+
+
+## Quick Start/Reproduction
+This repo is mainly an implementation and benchmark study. The commands below reproduce the validation and benchmark artifacts.
+
+```bash
+uv sync
+uv run python tools/audit_resnet18.py --output-dir artifacts/resnet18
+uv run python tools/export_all_golden.py --output-dir artifacts/resnet18
+```
+This writes:
+
+- `artifacts/resnet18/resnet18_audit.json`
+- `artifacts/resnet18/resnet18_imagenet1k_v1.elw`
+
+Use `--weights none` if you only want shapes from an untrained architecture and
+do not want TorchVision to download public ImageNet weights.
+
+
+
+```bash
+make
+make test
+make bench-kernels-save
+make plot-benchmarks
 ```
 
 Documentation is available through MkDocs:
@@ -33,107 +71,21 @@ uv run mkdocs serve
 The public docs cover validation, implementation details, performance output,
 and the `.elw` weight archive format.
 
-## Audit ResNet-18
 
-Create the Python tooling environment with uv:
+## Example Benchmark Output
 
-```bash
-uv sync
+Benchmark results are written as JSONL:
+
+```json
+{"op":"resnet18","impl":"resnet18_eigen","precision":"fp32","threads":1,
+"median_ms":123.4,"max_abs_error":0.00002}
 ```
+See docs/performance.md for the current example run and generated charts.
 
-Then run the auditor:
 
-```bash
-uv run python tools/audit_resnet18.py --output-dir artifacts/resnet18
-```
+## Prerequisites
 
-This writes:
+- for python: uv
+- for c++: Eigen
 
-- `artifacts/resnet18/resnet18_audit.json`
-- `artifacts/resnet18/resnet18_imagenet1k_v1.elw`
 
-Use `--weights none` if you only want shapes from an untrained architecture and
-do not want TorchVision to download public ImageNet weights.
-
-Export the PyTorch golden fixture for the final ResNet-18 `fc` layer:
-
-```bash
-uv run python tools/export_linear_golden.py --output-dir artifacts/resnet18
-```
-
-This writes:
-
-- `artifacts/resnet18/fc_golden.elw`
-- `artifacts/resnet18/fc_golden.json`
-
-Export the PyTorch golden fixture for the first ResNet-18 `conv1` layer:
-
-```bash
-uv run python tools/export_conv_golden.py --output-dir artifacts/resnet18
-```
-
-This writes:
-
-- `artifacts/resnet18/conv1_golden.elw`
-- `artifacts/resnet18/conv1_golden.json`
-
-Export the PyTorch golden fixture for `conv1 -> bn1`:
-
-```bash
-uv run python tools/export_conv_bn_golden.py --output-dir artifacts/resnet18
-```
-
-This writes:
-
-- `artifacts/resnet18/conv1_bn1_golden.elw`
-- `artifacts/resnet18/conv1_bn1_golden.json`
-
-Export the PyTorch golden fixture for the first identity BasicBlock,
-`layer1.0`:
-
-```bash
-uv run python tools/export_basicblock_golden.py --output-dir artifacts/resnet18
-```
-
-This writes:
-
-- `artifacts/resnet18/layer1_0_basicblock_golden.elw`
-- `artifacts/resnet18/layer1_0_basicblock_golden.json`
-
-## Build And Run
-
-Eigen is header-only, but the build expects an installed Eigen3 package.
-
-On Arch/Omarchy:
-
-```bash
-sudo pacman -S eigen3
-```
-
-The supported C++ build path is the root `Makefile`:
-
-```bash
-make
-./build/dlinf_demo artifacts/resnet18/resnet18_imagenet1k_v1.elw
-```
-
-Run the validation tests:
-
-```bash
-make test-linear
-make test-conv2d
-make test-conv-bn
-make test-basicblock
-```
-
-Run the current kernel benchmark harness:
-
-```bash
-make bench-kernels
-```
-
-If Eigen is installed in a non-standard location, pass the header directory:
-
-```bash
-make EIGEN_INCLUDE=/path/to/eigen3
-```

@@ -4,6 +4,7 @@
 #include "dlinf/layers/conv2d.hpp"
 #include "dlinf/layers/linear.hpp"
 #include "dlinf/layers/maxpool2d.hpp"
+#include "dlinf/networks/resnet18.hpp"
 #include "dlinf/weight_archive.hpp"
 
 #include <Eigen/Core>
@@ -47,6 +48,8 @@ struct Options {
     std::string maxpool_golden_path = "artifacts/resnet18/maxpool_golden.elw";
     std::string projection_basicblock_golden_path = "artifacts/resnet18/layer2_0_projection_basicblock_golden.elw";
     std::string avgpool_golden_path = "artifacts/resnet18/avgpool_golden.elw";
+    std::string resnet18_golden_path = "artifacts/resnet18/resnet18_full_golden.elw";
+    std::vector<std::string> cases;
     int warmup = 2;
     int iterations = 10;
 };
@@ -209,6 +212,51 @@ void require_close(const std::string& label, double max_abs_error) {
     }
 }
 
+bool is_kernel_case(const std::string& name) {
+    return name == "linear_fc"
+        || name == "conv1"
+        || name == "conv1_bn1"
+        || name == "layer1.0"
+        || name == "maxpool"
+        || name == "layer2.0"
+        || name == "avgpool";
+}
+
+bool is_model_case(const std::string& name) {
+    return name == "resnet18";
+}
+
+bool is_known_case_or_group(const std::string& name) {
+    return name == "all"
+        || name == "kernels"
+        || name == "models"
+        || is_kernel_case(name)
+        || is_model_case(name);
+}
+
+bool should_run_case(const Options& options, const std::string& name) {
+    const auto& selectors = options.cases;
+    if (selectors.empty()) {
+        return is_kernel_case(name);
+    }
+
+    for (const auto& selector : selectors) {
+        if (selector == "all") {
+            return true;
+        }
+        if (selector == "kernels" && is_kernel_case(name)) {
+            return true;
+        }
+        if (selector == "models" && is_model_case(name)) {
+            return true;
+        }
+        if (selector == name) {
+            return true;
+        }
+    }
+    return false;
+}
+
 Options parse_options(int argc, char** argv) {
     Options options;
     for (int i = 1; i < argc; ++i) {
@@ -236,6 +284,14 @@ Options parse_options(int argc, char** argv) {
             options.projection_basicblock_golden_path = require_value(arg);
         } else if (arg == "--avgpool-golden") {
             options.avgpool_golden_path = require_value(arg);
+        } else if (arg == "--resnet18-golden") {
+            options.resnet18_golden_path = require_value(arg);
+        } else if (arg == "--case") {
+            const auto selected_case = require_value(arg);
+            if (!is_known_case_or_group(selected_case)) {
+                throw std::runtime_error("unknown benchmark case or group: " + selected_case);
+            }
+            options.cases.push_back(selected_case);
         } else if (arg == "--warmup") {
             options.warmup = std::stoi(require_value(arg));
         } else if (arg == "--iterations") {
@@ -244,6 +300,10 @@ Options parse_options(int argc, char** argv) {
             std::cout
                 << "usage: bench_kernels [--weights PATH] [--fc-golden PATH] "
                    "[--conv-golden PATH] [--conv-bn-golden PATH] "
+                   "[--basicblock-golden PATH] [--maxpool-golden PATH] "
+                   "[--projection-basicblock-golden PATH] [--avgpool-golden PATH] "
+                   "[--resnet18-golden PATH] "
+                   "[--case kernels|models|all|linear_fc|conv1|conv1_bn1|layer1.0|maxpool|layer2.0|avgpool|resnet18] "
                    "[--warmup N] [--iterations N]\n";
             std::exit(0);
         } else {
@@ -695,6 +755,52 @@ void benchmark_avgpool(
     });
 }
 
+void benchmark_resnet18(
+    const Options& options,
+    const dlinf::WeightArchive& weights,
+    const std::string& host,
+    const std::string& cpu) {
+    const auto golden = dlinf::WeightArchive::load(options.resnet18_golden_path);
+
+    const auto input_view = golden.tensor_f32("resnet18.input");
+    const auto expected_view = golden.tensor_f32("resnet18.expected");
+
+    Eigen::Map<const RowMatrixXf> input(
+        input_view.data(),
+        static_cast<Eigen::Index>(input_view.shape()[0]),
+        static_cast<Eigen::Index>(input_view.shape()[1] * input_view.shape()[2]));
+    Eigen::Map<const Eigen::VectorXf> expected(expected_view.data(), expected_view.size());
+
+    const auto height = static_cast<int>(input_view.shape()[1]);
+    const auto width = static_cast<int>(input_view.shape()[2]);
+
+    const auto run_case = [&](const std::string& impl, const auto& fn) {
+        const Eigen::VectorXf actual = fn();
+        const double max_abs_error = (actual - expected).cwiseAbs().maxCoeff();
+        require_close("resnet18/" + impl, max_abs_error);
+
+        const BenchmarkStats stats = run_benchmark(options.warmup, options.iterations, [&]() {
+            const Eigen::VectorXf output = fn();
+            return static_cast<double>(output.sum());
+        });
+        print_record(
+            "resnet18",
+            impl,
+            input_view.shape(),
+            {},
+            options.warmup,
+            options.iterations,
+            max_abs_error,
+            stats,
+            host,
+            cpu);
+    };
+
+    run_case("resnet18_direct", [&]() {
+        return dlinf::resnet18_direct(input, weights, height, width);
+    });
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
@@ -704,13 +810,30 @@ int main(int argc, char** argv) {
         const std::string host = host_name();
         const std::string cpu = cpu_model();
 
-        benchmark_linear(options, weights, host, cpu);
-        benchmark_conv1(options, weights, host, cpu);
-        benchmark_conv1_bn1(options, weights, host, cpu);
-        benchmark_basicblock(options, weights, host, cpu);
-        benchmark_maxpool(options, weights, host, cpu);
-        benchmark_projection_basicblock(options, weights, host, cpu);
-        benchmark_avgpool(options, weights, host, cpu);
+        if (should_run_case(options, "linear_fc")) {
+            benchmark_linear(options, weights, host, cpu);
+        }
+        if (should_run_case(options, "conv1")) {
+            benchmark_conv1(options, weights, host, cpu);
+        }
+        if (should_run_case(options, "conv1_bn1")) {
+            benchmark_conv1_bn1(options, weights, host, cpu);
+        }
+        if (should_run_case(options, "layer1.0")) {
+            benchmark_basicblock(options, weights, host, cpu);
+        }
+        if (should_run_case(options, "maxpool")) {
+            benchmark_maxpool(options, weights, host, cpu);
+        }
+        if (should_run_case(options, "layer2.0")) {
+            benchmark_projection_basicblock(options, weights, host, cpu);
+        }
+        if (should_run_case(options, "avgpool")) {
+            benchmark_avgpool(options, weights, host, cpu);
+        }
+        if (should_run_case(options, "resnet18")) {
+            benchmark_resnet18(options, weights, host, cpu);
+        }
 
         return 0;
     } catch (const std::exception& exc) {

@@ -33,7 +33,10 @@ nav:
       - Linear: implementation/linear.md
       - Conv2d: implementation/conv2d.md
       - BatchNorm2d: implementation/batchnorm2d.md
+      - MaxPool2d: implementation/maxpool2d.md
+      - AvgPool2d: implementation/avgpool2d.md
       - BasicBlock: implementation/basicblock.md
+      - ResNet-18: implementation/resnet18.md
       - Tensor Layout: implementation/tensor_layout.md
   - Performance: performance.md
   - Weight Archive: weight_archive_format.md

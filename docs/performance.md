@@ -1,16 +1,25 @@
 # Performance
 
 The repository includes a small benchmark runner for the currently validated
-kernel variants. It prints one JSON object per measured case.
+kernel, block, and model variants. It prints one JSON object per measured case.
 
 ```bash
 make bench-kernels
+```
+
+`make bench-kernels` runs the operator/block group only. Full ResNet-18 timing
+is intentionally split out because the direct Conv2D path makes end-to-end
+inference much slower:
+
+```bash
+make bench-models
 ```
 
 Save a benchmark artifact and regenerate the documentation plots:
 
 ```bash
 make bench-kernels-save
+make bench-models-save
 make plot-benchmarks
 ```
 
@@ -18,11 +27,13 @@ Custom run:
 
 ```bash
 ./build/bench_kernels --warmup 5 --iterations 30
+./build/bench_kernels --case resnet18 --warmup 1 --iterations 3
 ```
 
-The default run uses `warmup=2` and `iterations=10`. That is enough for
-development feedback. Use larger iteration counts for numbers intended for a
-writeup.
+The default binary behavior is equivalent to `--case kernels`, with `warmup=2`
+and `iterations=10`. That is enough for development feedback. Use larger
+iteration counts for numbers intended for a writeup, and lower counts for slow
+full-model runs.
 
 The baseline (consumer laptop based) result is in:
 
@@ -33,8 +44,9 @@ benchmarks/results/local_laptop_kernel_bench.jsonl
 ## Terms
 
 In this repository, a benchmark **kernel** is one measured inference operation
-or small composed block, such as `linear_fc`, `conv1`, `conv1_bn1`, or `layer1.0`. It does
-not mean an operating-system kernel, CUDA kernel, or standalone GPU kernel.
+or composed inference case, such as `linear_fc`, `conv1`, `conv1_bn1`,
+`layer1.0`, or `resnet18`. It does not mean an operating-system kernel, CUDA
+kernel, or standalone GPU kernel.
 
 **Kernel latency** is the elapsed wall-clock time for one invocation of a
 specific implementation variant. Warmup runs are excluded. The reported
@@ -90,6 +102,19 @@ Important fields:
 | `compiler_flags` | Build flags used for the run |
 | `host` / `cpu_model` | Local machine metadata |
 
+## Case Selection
+
+The benchmark binary accepts repeated `--case` selectors. Supported groups are:
+
+| Selector | Runs |
+|---|---|
+| `kernels` | `linear_fc`, `conv1`, `conv1_bn1`, `layer1.0`, `maxpool`, `layer2.0`, `avgpool` |
+| `models` | `resnet18` |
+| `all` | both groups |
+
+Individual selectors are also accepted: `linear_fc`, `conv1`, `conv1_bn1`,
+`layer1.0`, `maxpool`, `layer2.0`, `avgpool`, and `resnet18`.
+
 ## Current Local Run
 
 These are local measurements from one laptop:
@@ -103,11 +128,10 @@ Threads: 1
 ```
 
 The first chart is a **kernel latency** chart: each bar is the median elapsed
-time for one measured operator/block implementation. The latency chart uses a
-log scale because the direct Conv2D implementation is much slower than the
-linear and Eigen-backed cases.
+time for one measured operator/block/model implementation present in the saved
+JSONL artifact. The latency chart uses a log scale because the direct Conv2D
+implementation is much slower than the linear and Eigen-backed cases.
 
 ![Kernel latency](images/kernel_latency.svg)
 
 ![Eigen-backed speedup](images/kernel_speedup.svg)
-

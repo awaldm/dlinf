@@ -13,7 +13,8 @@ state exactly what they measure.
 | [BatchNorm2d](implementation/batchnorm2d.md) | `batchnorm2d_direct` | inference-time channel normalization |
 | [MaxPool2d](implementation/maxpool2d.md) | `maxpool2d_direct` | spatial downsampling, no learned parameters |
 | [AvgPool2d](implementation/avgpool2d.md) | `avgpool2d_direct` | spatial averaging, no learned parameters |
-| [BasicBlock](implementation/basicblock.md) | `basicblock_direct` | ResNet-18 `layer1.0` identity block validated |
+| [BasicBlock](implementation/basicblock.md) | `basicblock_direct` | identity and projection BasicBlock variants |
+| [ResNet-18](implementation/resnet18.md) | `resnet18_direct` | full pipeline `[3,224,224] → [1000]` |
 | [Tensor Layout](implementation/tensor_layout.md) | `[channels, height * width]` views | current C++ comparison layout |
 
 Benchmarks call explicit implementation names rather than default wrappers.

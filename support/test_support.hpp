@@ -1,3 +1,4 @@
+// This lives in support/ instead of include/ because it's part of the test harness, not of the library
 #pragma once
 
 #include "dlinf/tensor.hpp"

@@ -17,6 +17,7 @@ tolerance.
 | `maxpool_golden.elw` | `tools/export_maxpool_golden.py` | `maxpool` (stem) input and expected output |
 | `avgpool_golden.elw` | `tools/export_avgpool_golden.py` | `avgpool` (head) input and expected output |
 | `layer2_0_projection_basicblock_golden.elw` | `tools/export_projection_basicblock_golden.py` | `layer2.0` projection BasicBlock input and expected output |
+| `resnet18_full_golden.elw` | `tools/export_resnet18_golden.py` | Full ResNet-18 `[3, 224, 224] -> [1000]` input and expected output |
 
 ## Test Commands
 
@@ -28,6 +29,7 @@ make test-basicblock
 make test-maxpool
 make test-projection-basicblock
 make test-avgpool
+make test-resnet18
 ```
 
 ## Current Checks
@@ -41,5 +43,6 @@ make test-avgpool
 | `test-maxpool` | `maxpool2d_direct` | PyTorch `maxpool` |
 | `test-avgpool` | `avgpool2d_direct` | PyTorch `avgpool` |
 | `test-projection-basicblock` | `basicblock_direct` projection block | PyTorch `layer2.0` |
+| `test-resnet18` | `resnet18_direct` full pipeline | PyTorch full ResNet-18 |
 
 The broader coverage map is tracked in [ResNet-18 Coverage](resnet18_coverage.md).

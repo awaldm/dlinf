@@ -23,5 +23,6 @@ __pycache__/
 # Benchmark outputs: keep the curated baseline, ignore ad hoc runs
 benchmarks/results/*.jsonl
 !benchmarks/results/local_laptop_kernel_bench.jsonl
+!benchmarks/results/local_laptop_model_bench.jsonl
 
 AGENTS.md

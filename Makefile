@@ -15,12 +15,16 @@ TEST_BASICBLOCK_TARGET := $(BUILD_DIR)/test_basicblock
 TEST_MAXPOOL_TARGET := $(BUILD_DIR)/test_maxpool
 TEST_PROJECTION_BASICBLOCK_TARGET := $(BUILD_DIR)/test_projection_basicblock
 TEST_AVGPOOL_TARGET := $(BUILD_DIR)/test_avgpool
+TEST_RESNET18_TARGET := $(BUILD_DIR)/test_resnet18
 BENCH_KERNELS_TARGET := $(BUILD_DIR)/bench_kernels
 KERNEL_BENCH_RESULTS ?= $(BENCH_RESULTS_DIR)/local_laptop_kernel_bench.jsonl
+MODEL_BENCH_RESULTS ?= $(BENCH_RESULTS_DIR)/local_laptop_model_bench.jsonl
 KERNEL_LATENCY_SVG ?= $(DOCS_IMAGES_DIR)/kernel_latency.svg
 KERNEL_SPEEDUP_SVG ?= $(DOCS_IMAGES_DIR)/kernel_speedup.svg
 BENCH_WARMUP ?= 5
 BENCH_ITERATIONS ?= 30
+MODEL_BENCH_WARMUP ?= 1
+MODEL_BENCH_ITERATIONS ?= 3
 
 COMMON_SOURCES := src/linear.cpp src/conv2d.cpp src/weight_archive.cpp
 DEMO_SOURCES := src/main.cpp $(COMMON_SOURCES)
@@ -32,7 +36,8 @@ TEST_BASICBLOCK_SOURCES := tests/test_basicblock.cpp src/batchnorm2d.cpp src/bas
 TEST_MAXPOOL_SOURCES := tests/test_maxpool.cpp src/maxpool2d.cpp $(COMMON_SOURCES)
 TEST_PROJECTION_BASICBLOCK_SOURCES := tests/test_projection_basicblock.cpp src/batchnorm2d.cpp src/basicblock.cpp $(COMMON_SOURCES)
 TEST_AVGPOOL_SOURCES := tests/test_avgpool.cpp src/avgpool2d.cpp src/weight_archive.cpp
-BENCH_KERNELS_SOURCES := benchmarks/bench_kernels.cpp src/batchnorm2d.cpp src/basicblock.cpp src/maxpool2d.cpp src/avgpool2d.cpp $(COMMON_SOURCES)
+TEST_RESNET18_SOURCES := tests/test_resnet18.cpp src/resnet18.cpp src/batchnorm2d.cpp src/basicblock.cpp src/maxpool2d.cpp src/avgpool2d.cpp $(COMMON_SOURCES)
+BENCH_KERNELS_SOURCES := benchmarks/bench_kernels.cpp src/resnet18.cpp src/batchnorm2d.cpp src/basicblock.cpp src/maxpool2d.cpp src/avgpool2d.cpp $(COMMON_SOURCES)
 
 TARGETS := $(DEMO_TARGET)
 ifneq ($(wildcard tests/test_linear.cpp),)
@@ -62,8 +67,11 @@ endif
 ifneq ($(wildcard tests/test_avgpool.cpp),)
 TARGETS += $(TEST_AVGPOOL_TARGET)
 endif
+ifneq ($(wildcard tests/test_resnet18.cpp),)
+TARGETS += $(TEST_RESNET18_TARGET)
+endif
 
-.PHONY: all clean demo test-linear test-conv2d test-conv-bn test-elementwise test-basicblock test-maxpool test-projection-basicblock test-avgpool bench-kernels bench-kernels-save plot-benchmarks
+.PHONY: all clean demo test-linear test-conv2d test-conv-bn test-elementwise test-basicblock test-maxpool test-projection-basicblock test-avgpool test-resnet18 bench-kernels bench-models bench-all bench-kernels-save bench-models-save plot-benchmarks
 
 all: $(TARGETS)
 
@@ -98,6 +106,9 @@ $(TEST_PROJECTION_BASICBLOCK_TARGET): $(TEST_PROJECTION_BASICBLOCK_SOURCES) | $(
 
 $(TEST_AVGPOOL_TARGET): $(TEST_AVGPOOL_SOURCES) | $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) -Iinclude -I$(SUPPORT_INCLUDE) -I$(EIGEN_INCLUDE) $(TEST_AVGPOOL_SOURCES) -o $(TEST_AVGPOOL_TARGET)
+
+$(TEST_RESNET18_TARGET): $(TEST_RESNET18_SOURCES) | $(BUILD_DIR)
+	$(CXX) $(CXXFLAGS) -Iinclude -I$(SUPPORT_INCLUDE) -I$(EIGEN_INCLUDE) $(TEST_RESNET18_SOURCES) -o $(TEST_RESNET18_TARGET)
 
 $(BENCH_KERNELS_TARGET): $(BENCH_KERNELS_SOURCES) | $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) -DDLINF_CXXFLAGS='"$(CXXFLAGS)"' -Iinclude -I$(SUPPORT_INCLUDE) -I$(EIGEN_INCLUDE) $(BENCH_KERNELS_SOURCES) -o $(BENCH_KERNELS_TARGET)
@@ -145,12 +156,27 @@ test-avgpool: $(TEST_AVGPOOL_TARGET)
 	$(TEST_AVGPOOL_TARGET) \
 		artifacts/resnet18/avgpool_golden.elw
 
+test-resnet18: $(TEST_RESNET18_TARGET)
+	$(TEST_RESNET18_TARGET) \
+		artifacts/resnet18/resnet18_imagenet1k_v1.elw \
+		artifacts/resnet18/resnet18_full_golden.elw
+
 bench-kernels: $(BENCH_KERNELS_TARGET)
-	$(BENCH_KERNELS_TARGET)
+	$(BENCH_KERNELS_TARGET) --case kernels
+
+bench-models: $(BENCH_KERNELS_TARGET)
+	$(BENCH_KERNELS_TARGET) --case models --warmup $(MODEL_BENCH_WARMUP) --iterations $(MODEL_BENCH_ITERATIONS)
+
+bench-all: $(BENCH_KERNELS_TARGET)
+	$(BENCH_KERNELS_TARGET) --case all
 
 bench-kernels-save: $(BENCH_KERNELS_TARGET)
 	mkdir -p $(BENCH_RESULTS_DIR)
-	$(BENCH_KERNELS_TARGET) --warmup $(BENCH_WARMUP) --iterations $(BENCH_ITERATIONS) > $(KERNEL_BENCH_RESULTS)
+	$(BENCH_KERNELS_TARGET) --case kernels --warmup $(BENCH_WARMUP) --iterations $(BENCH_ITERATIONS) > $(KERNEL_BENCH_RESULTS)
+
+bench-models-save: $(BENCH_KERNELS_TARGET)
+	mkdir -p $(BENCH_RESULTS_DIR)
+	$(BENCH_KERNELS_TARGET) --case models --warmup $(MODEL_BENCH_WARMUP) --iterations $(MODEL_BENCH_ITERATIONS) > $(MODEL_BENCH_RESULTS)
 
 plot-benchmarks: $(KERNEL_BENCH_RESULTS)
 	mkdir -p $(DOCS_IMAGES_DIR)

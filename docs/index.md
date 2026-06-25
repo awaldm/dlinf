@@ -38,6 +38,8 @@ Implemented operators:
 | `Linear` | `linear_naive` | `linear_eigen` |
 | `Conv2d` | `conv2d_naive_direct` | `conv2d_im2col_eigen` |
 | `BatchNorm2d` | `batchnorm2d_direct` | - |
+| `MaxPool2d` | `maxpool2d_direct` | - |
+| `AvgPool2d` | `avgpool2d_direct` | - |
 | ReLU | `relu_inplace` | - |
 | ElementWiseAdd | `elementwise_add` | - |
 
@@ -49,6 +51,9 @@ Current reference model surface:
 | ResNet-18 `conv1` | validated |
 | ResNet-18 `conv1 -> bn1` | validated |
 | ResNet-18 `layer1.0` BasicBlock | validated and benchmarked |
+| ResNet-18 `layer2.0` projection BasicBlock | validated and benchmarked |
+| ResNet-18 stem/head pooling | validated and benchmarked |
+| ResNet-18 full pipeline | validated and benchmark-wired |
 
 ## Build And Run
 
@@ -64,6 +69,7 @@ uv run python tools/export_basicblock_golden.py --output-dir artifacts/resnet18
 uv run python tools/export_maxpool_golden.py --output-dir artifacts/resnet18
 uv run python tools/export_avgpool_golden.py --output-dir artifacts/resnet18
 uv run python tools/export_projection_basicblock_golden.py --output-dir artifacts/resnet18
+uv run python tools/export_resnet18_golden.py --output-dir artifacts/resnet18
 ```
 
 Build and run the validation targets:
@@ -72,7 +78,12 @@ Build and run the validation targets:
 make test-linear
 make test-conv2d
 make test-conv-bn
+make test-elementwise
 make test-basicblock
+make test-maxpool
+make test-avgpool
+make test-projection-basicblock
+make test-resnet18
 ```
 
 Run the kernel benchmark harness:

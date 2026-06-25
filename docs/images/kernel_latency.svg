@@ -1,33 +1,36 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="980" height="492" viewBox="0 0 980 492" role="img"><style>text{font-family:Inter,Arial,sans-serif;fill:#1f2937}.title{font-size:18px;font-weight:700}.subtitle{font-size:12px;fill:#4b5563}.label{font-size:12px}.value{font-size:12px;font-weight:600}.axis{stroke:#d1d5db;stroke-width:1}.bar-direct{fill:#64748b}.bar-eigen{fill:#2563eb}.bar-speed{fill:#059669}</style>
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="532" viewBox="0 0 980 532" role="img"><style>text{font-family:Inter,Arial,sans-serif;fill:#1f2937}.title{font-size:18px;font-weight:700}.subtitle{font-size:12px;fill:#4b5563}.label{font-size:12px}.value{font-size:12px;font-weight:600}.axis{stroke:#d1d5db;stroke-width:1}.bar-direct{fill:#64748b}.bar-eigen{fill:#2563eb}.bar-speed{fill:#059669}</style>
 <rect width="100%" height="100%" fill="#ffffff"/>
 <text class="title" x="28" y="34">Kernel latency</text>
 <text class="subtitle" x="28" y="56">Median latency in milliseconds. Bar length uses a log scale.</text>
 <line class="axis" x1="245" y1="72" x2="790" y2="72"/>
 <text class="label" x="28" y="102">Linear / direct</text>
-<rect class="bar-direct" x="245" y="84" width="182.8" height="22" rx="3"/>
-<text class="value" x="437.8" y="100">1.257 ms</text>
+<rect class="bar-direct" x="245" y="84" width="156.0" height="22" rx="3"/>
+<text class="value" x="411.0" y="100">0.457 ms</text>
 <text class="label" x="28" y="142">Linear / Eigen</text>
-<rect class="bar-eigen" x="245" y="124" width="13.1" height="22" rx="3"/>
-<text class="value" x="268.1" y="140">0.070 ms</text>
+<rect class="bar-eigen" x="245" y="124" width="29.9" height="22" rx="3"/>
+<text class="value" x="284.9" y="140">0.046 ms</text>
 <text class="label" x="28" y="182">Conv1 / direct</text>
-<rect class="bar-direct" x="245" y="164" width="490.7" height="22" rx="3"/>
-<text class="value" x="745.7" y="180">234.925 ms</text>
+<rect class="bar-direct" x="245" y="164" width="491.0" height="22" rx="3"/>
+<text class="value" x="746.0" y="180">207.241 ms</text>
 <text class="label" x="28" y="222">Conv1 / im2col+Eigen</text>
-<rect class="bar-eigen" x="245" y="204" width="333.6" height="22" rx="3"/>
-<text class="value" x="588.6" y="220">16.277 ms</text>
+<rect class="bar-eigen" x="245" y="204" width="343.4" height="22" rx="3"/>
+<text class="value" x="598.4" y="220">13.979 ms</text>
 <text class="label" x="28" y="262">Conv1+BN / direct</text>
 <rect class="bar-direct" x="245" y="244" width="490.9" height="22" rx="3"/>
-<text class="value" x="745.9" y="260">235.758 ms</text>
+<text class="value" x="745.9" y="260">206.603 ms</text>
 <text class="label" x="28" y="302">Conv1+BN / im2col+Eigen</text>
-<rect class="bar-eigen" x="245" y="284" width="335.3" height="22" rx="3"/>
-<text class="value" x="590.3" y="300">16.764 ms</text>
+<rect class="bar-eigen" x="245" y="284" width="343.9" height="22" rx="3"/>
+<text class="value" x="598.9" y="300">14.113 ms</text>
 <text class="label" x="28" y="342">layer1.0 / basicblock_direct</text>
-<rect class="bar-direct" x="245" y="324" width="536.8" height="22" rx="3"/>
-<text class="value" x="791.8" y="340">513.634 ms</text>
+<rect class="bar-direct" x="245" y="324" width="537.3" height="22" rx="3"/>
+<text class="value" x="792.3" y="340">482.817 ms</text>
 <text class="label" x="28" y="382">maxpool / maxpool2d_direct</text>
-<rect class="bar-direct" x="245" y="364" width="248.2" height="22" rx="3"/>
-<text class="value" x="503.2" y="380">3.813 ms</text>
+<rect class="bar-direct" x="245" y="364" width="266.1" height="22" rx="3"/>
+<text class="value" x="521.1" y="380">3.412 ms</text>
 <text class="label" x="28" y="422">layer2.0 / basicblock_direct</text>
-<rect class="bar-direct" x="245" y="404" width="524.0" height="22" rx="3"/>
-<text class="value" x="779.0" y="420">413.583 ms</text>
+<rect class="bar-direct" x="245" y="404" width="524.6" height="22" rx="3"/>
+<text class="value" x="779.6" y="420">382.894 ms</text>
+<text class="label" x="28" y="462">avgpool / avgpool2d_direct</text>
+<rect class="bar-direct" x="245" y="444" width="12.2" height="22" rx="3"/>
+<text class="value" x="267.2" y="460">0.033 ms</text>
 </svg>
